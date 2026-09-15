@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
+from pacientes import PacientesTab
+from agenda import AgendaTab
+
 
 def _placeholder(master, texto):
     frame = ttk.Frame(master, padding=40)
@@ -23,8 +26,8 @@ class App(tk.Tk):
         self._tabs = ttk.Notebook(self)
         self._tabs.pack(fill="both", expand=True)
 
-        self.agenda_tab = _placeholder(self._tabs, "Agenda")
-        self.pacientes_tab = _placeholder(self._tabs, "Pacientes")
+        self.agenda_tab = AgendaTab(self._tabs)
+        self.pacientes_tab = PacientesTab(self._tabs)
         self.historia_tab = _placeholder(self._tabs, "Historia")
 
         self._tabs.add(self.agenda_tab, text="Agenda")
