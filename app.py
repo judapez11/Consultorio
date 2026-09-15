@@ -22,6 +22,13 @@ class App(tk.Tk):
         self.title("Consultorio Dental")
         self.geometry("900x600")
         self.minsize(700, 450)
+        self._maximizar()
+
+    def _maximizar(self):
+        try:
+            self.attributes("-zoomed", True)
+        except tk.TclError:
+            pass
 
         self._tabs = ttk.Notebook(self)
         self._tabs.pack(fill="both", expand=True)

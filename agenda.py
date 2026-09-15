@@ -39,7 +39,7 @@ class AgendaTab(ttk.Frame):
             firstweekday="monday",
             locale="es_ES",
             date_pattern="dd/mm/yyyy",
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 13),
         )
         self.cal.pack()
         self.cal.tag_config("cita", background="#cfe8ff")
@@ -59,8 +59,8 @@ class AgendaTab(ttk.Frame):
         self.tree.heading("hora", text="Hora")
         self.tree.heading("paciente", text="Paciente")
         self.tree.heading("motivo", text="Motivo")
-        self.tree.column("id", width=40, stretch=False)
-        self.tree.column("hora", width=60, stretch=False)
+        self.tree.column("id", width=70, stretch=False)
+        self.tree.column("hora", width=90, stretch=False)
         self.tree.column("paciente", width=160)
         self.tree.column("motivo", width=180)
         scroll = ttk.Scrollbar(derecha, orient="vertical", command=self.tree.yview)
