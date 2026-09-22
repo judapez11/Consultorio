@@ -25,19 +25,43 @@ class ScrollableFrame(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.canvas = tk.Canvas(self, highlightthickness=0)
-        scroll = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.scroll = tk.Scrollbar(self, orient="vertical",
+                                   command=self.canvas.yview, width=22,
+                                   relief="groove")
+        self.scroll.pack(side="right", fill="y")
+
         self.interior = ttk.Frame(self.canvas)
         self.interior.bind(
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")),
         )
-        self.canvas.create_window((0, 0), window=self.interior, anchor="nw")
-        self.canvas.configure(yscrollcommand=scroll.set)
-        self.canvas.pack(side="left", fill="both", expand=True)
-        scroll.pack(side="right", fill="y")
-        self.interior.bind("<Enter>", lambda e: self.canvas.bind_all("<MouseWheel>",
-                          lambda ev: self.canvas.yview_scroll(int(-ev.delta / 120), "units")))
-        self.interior.bind("<Leave>", lambda e: self.canvas.unbind_all("<MouseWheel>"))
+        self._ventana = self.canvas.create_window(
+            (0, 0), window=self.interior, anchor="nw", tags="ventana"
+        )
+        self.canvas.bind("<Configure>", self._ajustar_ancho)
+        self.canvas.configure(yscrollcommand=self.scroll.set)
+
+        self.canvas.bind_all("<MouseWheel>", self._rueda)
+        self.canvas.bind_all("<Button-4>", self._rueda_linux)
+        self.canvas.bind_all("<Button-5>", self._rueda_linux)
+
+    def _ajustar_ancho(self, event):
+        self.canvas.itemconfigure(self._ventana, width=event.width)
+
+    def _rueda(self, event):
+        if isinstance(event.widget, tk.Text):
+            return
+        self.canvas.yview_scroll(int(-event.delta / 120), "units")
+
+    def _rueda_linux(self, event):
+        if isinstance(event.widget, tk.Text):
+            return
+        if event.num == 4:
+            self.canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.canvas.yview_scroll(1, "units")
 
 
 class HistoriaTab(ttk.Frame):
@@ -69,12 +93,14 @@ class HistoriaTab(ttk.Frame):
         medio.pack(fill="x", pady=8)
 
         ttk.Label(medio, text="Historias del paciente:").pack(anchor="w")
-        self.tree = ttk.Treeview(medio, columns=("id", "fecha"), show="headings",
-                                 height=5, selectmode="browse")
+        self.tree = ttk.Treeview(medio, columns=("id", "fecha", "motivo"),
+                                 show="headings", height=5, selectmode="browse")
         self.tree.heading("id", text="ID")
         self.tree.heading("fecha", text="Fecha")
+        self.tree.heading("motivo", text="Motivo de consulta")
         self.tree.column("id", width=60, stretch=False)
-        self.tree.column("fecha", width=120)
+        self.tree.column("fecha", width=120, stretch=False)
+        self.tree.column("motivo", width=320)
         self.tree.pack(fill="x")
         self.tree.bind("<<TreeviewSelect>>", self._seleccionar_historia)
 
@@ -117,7 +143,7 @@ class HistoriaTab(ttk.Frame):
         conf = self._config_doc()
         for h in conf["listar"](self._paciente_id):
             self.tree.insert("", "end", iid=str(h["id"]),
-                             values=(h["id"], h["fecha"]))
+                             values=(h["id"], h["fecha"], h["motivo_consulta"]))
 
     def _nueva(self):
         self._historia_id = None
@@ -151,6 +177,14 @@ class HistoriaTab(ttk.Frame):
         if not self._form:
             return
         conf = self._config_doc()
+        validar = getattr(self._form, "validar", None)
+        if validar:
+            faltan = validar()
+            if faltan:
+                messagebox.showwarning(
+                    "Campos incompletos", "Completa antes de guardar: " + ", ".join(faltan)
+                )
+                return
         datos = self._form.datos()
         if self._historia_id is None:
             conf["guardar"](self._paciente_id, datos)

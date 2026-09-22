@@ -30,17 +30,24 @@ class HistoriaOdontologicaForm(ttk.Frame):
         self.fecha_nac_var = tk.StringVar()
 
         ttk.Label(cuadro, text="Fecha de consulta").grid(row=0, column=0, sticky="w", pady=3)
-        self.fecha_entry.grid(row=0, column=1, sticky="w", padx=6)
+        self.fecha_entry.grid(row=0, column=1, sticky="we", padx=6)
         ttk.Label(cuadro, text="Ocupacion").grid(row=1, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro, textvariable=self.ocupacion_var, width=30).grid(row=1, column=1, padx=6)
+        ttk.Entry(cuadro, textvariable=self.ocupacion_var).grid(
+            row=1, column=1, sticky="we", padx=6)
         ttk.Label(cuadro, text="Estado civil").grid(row=1, column=2, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro, textvariable=self.estado_civil_var, width=30).grid(row=1, column=3, padx=6)
+        ttk.Entry(cuadro, textvariable=self.estado_civil_var).grid(
+            row=1, column=3, sticky="we", padx=6)
         ttk.Label(cuadro, text="Fecha de nacimiento").grid(row=2, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro, textvariable=self.fecha_nac_var, width=30).grid(row=2, column=1, padx=6)
+        ttk.Entry(cuadro, textvariable=self.fecha_nac_var).grid(
+            row=2, column=1, sticky="we", padx=6)
 
-        ttk.Label(cuadro, text="Acudiente (si es menor de edad)", font=("Segoe UI", 9, "bold")).grid(
-            row=3, column=0, columnspan=4, sticky="w", pady=(10, 2)
-        )
+        self.es_menor_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(
+            cuadro, text="¿Es menor de edad?", variable=self.es_menor_var,
+            font=("Segoe UI", 11, "bold"), command=self._toggle_acudiente,
+        ).grid(row=3, column=0, columnspan=4, sticky="w", pady=(8, 0))
+
+        self.acudiente = ttk.LabelFrame(self, text="Acudiente", padding=10)
         self.acu_a1 = tk.StringVar()
         self.acu_a2 = tk.StringVar()
         self.acu_nom = tk.StringVar()
@@ -48,23 +55,27 @@ class HistoriaOdontologicaForm(ttk.Frame):
         self.acu_tel = tk.StringVar()
         self.acu_par = tk.StringVar()
 
-        ttk.Label(cuadro, text="Primer apellido").grid(row=4, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro, textvariable=self.acu_a1, width=25).grid(row=4, column=1, padx=6)
-        ttk.Label(cuadro, text="Segundo apellido").grid(row=4, column=2, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro, textvariable=self.acu_a2, width=25).grid(row=4, column=3, padx=6)
-        ttk.Label(cuadro, text="Nombre").grid(row=5, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro, textvariable=self.acu_nom, width=25).grid(row=5, column=1, padx=6)
-        ttk.Label(cuadro, text="Parentesco").grid(row=5, column=2, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro, textvariable=self.acu_par, width=25).grid(row=5, column=3, padx=6)
-        ttk.Label(cuadro, text="Direccion").grid(row=6, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro, textvariable=self.acu_dir, width=25).grid(row=6, column=1, padx=6)
-        ttk.Label(cuadro, text="Telefono").grid(row=6, column=2, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro, textvariable=self.acu_tel, width=25).grid(row=6, column=3, padx=6)
+        ttk.Label(self.acudiente, text="Primer apellido").grid(row=0, column=0, sticky="w", pady=3)
+        ttk.Entry(self.acudiente, textvariable=self.acu_a1).grid(row=0, column=1, sticky="we", padx=6)
+        ttk.Label(self.acudiente, text="Segundo apellido").grid(row=0, column=2, sticky="w", pady=3, padx=(12, 0))
+        ttk.Entry(self.acudiente, textvariable=self.acu_a2).grid(row=0, column=3, sticky="we", padx=6)
+        ttk.Label(self.acudiente, text="Nombre").grid(row=1, column=0, sticky="w", pady=3)
+        ttk.Entry(self.acudiente, textvariable=self.acu_nom).grid(row=1, column=1, sticky="we", padx=6)
+        ttk.Label(self.acudiente, text="Parentesco").grid(row=1, column=2, sticky="w", pady=3, padx=(12, 0))
+        ttk.Entry(self.acudiente, textvariable=self.acu_par).grid(row=1, column=3, sticky="we", padx=6)
+        ttk.Label(self.acudiente, text="Direccion").grid(row=2, column=0, sticky="w", pady=3)
+        ttk.Entry(self.acudiente, textvariable=self.acu_dir).grid(row=2, column=1, sticky="we", padx=6)
+        ttk.Label(self.acudiente, text="Telefono").grid(row=2, column=2, sticky="w", pady=3, padx=(12, 0))
+        ttk.Entry(self.acudiente, textvariable=self.acu_tel).grid(row=2, column=3, sticky="we", padx=6)
+        self.acudiente.columnconfigure(1, weight=1)
+        self.acudiente.columnconfigure(3, weight=1)
 
+        cuadro.columnconfigure(1, weight=1)
         cuadro.columnconfigure(3, weight=1)
 
         cuadro2 = ttk.LabelFrame(self, text="2. Anamnesis", padding=10)
         cuadro2.pack(fill="x", pady=(8, 0))
+        self._anamnesis = cuadro2
         self.ant_pers = self._campo_texto(cuadro2, "Antecedentes medicos personales", 0)
         self.ant_fam = self._campo_texto(cuadro2, "Antecedentes medicos familiares", 1)
         self.motivo = self._campo_texto(cuadro2, "Motivo de la consulta", 2)
@@ -75,11 +86,16 @@ class HistoriaOdontologicaForm(ttk.Frame):
         self.seda_var = tk.StringVar()
         self.enjuague_var = tk.StringVar()
         ttk.Label(cuadro3, text="Cepillado").grid(row=0, column=0, sticky="w", pady=3)
-        ttk.Entry(cuadro3, textvariable=self.cepillado_var, width=25).grid(row=0, column=1, padx=6)
+        ttk.Entry(cuadro3, textvariable=self.cepillado_var).grid(
+            row=0, column=1, sticky="we", padx=6)
         ttk.Label(cuadro3, text="Uso de seda dental").grid(row=0, column=2, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro3, textvariable=self.seda_var, width=25).grid(row=0, column=3, padx=6)
+        ttk.Entry(cuadro3, textvariable=self.seda_var).grid(
+            row=0, column=3, sticky="we", padx=6)
         ttk.Label(cuadro3, text="Uso de enjuague").grid(row=0, column=4, sticky="w", pady=3, padx=(12, 0))
-        ttk.Entry(cuadro3, textvariable=self.enjuague_var, width=25).grid(row=0, column=5, padx=6)
+        ttk.Entry(cuadro3, textvariable=self.enjuague_var).grid(
+            row=0, column=5, sticky="we", padx=6)
+        for c in (1, 3, 5):
+            cuadro3.columnconfigure(c, weight=1)
 
         self.odontograma = OdontogramaFrame(self)
         self.odontograma.pack(fill="x", pady=(8, 0))
@@ -112,7 +128,15 @@ class HistoriaOdontologicaForm(ttk.Frame):
         padre.columnconfigure(1, weight=1)
         return texto
 
+    def _toggle_acudiente(self):
+        if self.es_menor_var.get():
+            self.acudiente.pack(fill="x", pady=(8, 0), before=self._anamnesis)
+        else:
+            self.acudiente.pack_forget()
+
     def limpiar(self):
+        self.es_menor_var.set(False)
+        self._toggle_acudiente()
         for var in (
             self.ocupacion_var, self.estado_civil_var, self.fecha_nac_var,
             self.acu_a1, self.acu_a2, self.acu_nom, self.acu_dir, self.acu_tel,
@@ -167,6 +191,26 @@ class HistoriaOdontologicaForm(ttk.Frame):
             if valor in ("N", "AN"):
                 var.set(valor)
         self.odontograma.set_estados(datos.get("odontograma") or {})
+        es_menor = any(var.get().strip() for var in
+                       (self.acu_a1, self.acu_a2, self.acu_nom, self.acu_dir,
+                        self.acu_tel, self.acu_par))
+        self.es_menor_var.set(es_menor)
+        self._toggle_acudiente()
+
+    def validar(self):
+        faltan = []
+        if self.es_menor_var.get():
+            campos = [
+                ("Primer apellido del acudiente", self.acu_a1),
+                ("Nombre del acudiente", self.acu_nom),
+                ("Parentesco", self.acu_par),
+                ("Direccion del acudiente", self.acu_dir),
+                ("Telefono del acudiente", self.acu_tel),
+            ]
+            for etiqueta, var in campos:
+                if not var.get().strip():
+                    faltan.append(etiqueta)
+        return faltan
 
     def datos(self):
         def texto(t):

@@ -33,9 +33,9 @@ F. DRA. FAWIZA TAYLOR (7 pág = 5 registros admin: temp ambiente, insumos, ester
 ## Estructura (adicionales Fase 4A)
 | Archivo | Función |
 |---------|---------|
-| `odontograma.py` | Componente reutilizable: 32 dientes FDI, combos de estado, `get_estados()`/`set_estados()`. Usado en 4A y 4D |
-| `historia_odontologica.py` | Formulario completo (identificación, anamnesis, hábitos, odontograma, examen oral 16 ítems N/AN, diagnóstico). `cargar()`/`datos()`/`limpiar()` |
-| `historia.py` | Pestaña Historia: selector paciente + documento, lista de historias, form con scroll. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
+| `odontograma.py` | **Canvas, grid 2×2 por cuadrante, cada cuadrante 4×2**. Ocupa 100% del ancho (`fill=x` + `<Configure>`→`_dibujar`, sin tope). 5 sectores/diente (Vest/Mes/Ocl/Dis/Ling) con mapeo clínico por cuadrante (mesial a línea media, vestibular hacia fuera). Paleta 7 estados con colores (Sano/Caries/Obturado/Ausente/Endodoncia/Protesis/Otro). Clic en sector pinta, re-clic = Sano, **clic derecho = diente ausente** (✕). ⚠️ Los rótulos comparten el tag del rectángulo (para clic) y `_pintar` cambia fill SOLO a items `rectangle` (no text, o desaparecen). API `get_estados()`→`{diente:{sector:estado}}`, `set_estados()` acepta dict y **legacy plano**. |
+| `historia_odontologica.py` | Formulario completo (identificación, anamnesis, hábitos, odontograma, examen oral 16 ítems N/AN, diagnóstico). **Checkbox "¿Es menor de edad?"** → muestra/oculta frame Acudiente (`_toggle_acudiente`, pack before=anamnesis). `validar()`: si menor → obliga apellido/nombre/parentesco/dirección/teléfono del acudiente; adulto → sin requisitos. `cargar()` deduce menor si hay datos de acudiente. Entries con `sticky="we"` + weight → 100% |
+| `historia.py` | Pestaña Historia: selector paciente + documento, lista de historias (**columnas id/fecha/motivo_consulta**), form con scroll. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F). `_guardar` llama `form.validar()` si existe (bloquea con aviso). ScrollableFrame: interior 100% ancho, scrollbar grueso, rueda del ratón (MouseWheel + Button-4/5, ignora Text) |
 | Tabla `historia_odontologica` | exámen oral y odontograma guardados como JSON en columnas TEXT |
 
 ## Reglas de sesión / convenciones

@@ -176,7 +176,7 @@ COLUMNAS_HISTORIA_OD = [
 def listar_historias_od(paciente_id):
     with get_conn() as conn:
         cur = conn.execute(
-            "SELECT id, fecha FROM historia_odontologica"
+            "SELECT id, fecha, motivo_consulta FROM historia_odontologica"
             " WHERE paciente_id=? ORDER BY fecha DESC",
             (paciente_id,),
         )
