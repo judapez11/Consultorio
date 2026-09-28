@@ -31,6 +31,7 @@ cd ~/Documentos/Consultorio && ./run.sh
 | `historia.py` | Pestaña Historia: selector paciente/documento, lista (id/fecha/motivo), ScrollableFrame con rueda de ratón. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
 | `historia_odontologica.py` | Formulario Historia Odontológica (Fase 4A): identificación + checkbox menor/acudiente, anamnesis, hábitos, odontograma, examen oral, diagnóstico. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
+| `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `odontograma.py` | Canvas: grid 2×2 por cuadrante, cada cuadrante 4×2, 5 sectores/diente, paleta de estados, clic derecho = ausente. API `get_estados()`/`set_estados()` |
 | `mi_calendario.py` | Calendario propio en canvas (rápido); usado por fechas cuando se necesite |
 | `run.sh` | Lanzador |
@@ -44,7 +45,8 @@ cd ~/Documentos/Consultorio && ./run.sh
 - ✅ Fase 3: agenda + calendario
 - ✅ Fase 4A: HISTORIA ODONTOLOGICA (+ componente ODONTOGRAMA por sectores)
 - ✅ Fase 4B: HISTORIA DE URGENCIA
-- ⬜ 4C: Hoja Evolución · 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
+- ✅ Fase 4C: HOJA DE EVOLUCION
+- ⬜ 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
 - ⬜ Fase 5: exportar PDF (solo cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
 

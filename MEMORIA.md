@@ -8,6 +8,7 @@
 - ✅ Fase 3: agenda + calendario tkcalendar (slots 08:00-18:30 cada 30min, valida hora ocupada, ventana maximizada, columnas anchas)
 - ✅ Fase 4A: HISTORIA ODONTOLOGICA + componente ODONTOGRAMA (cuadrícula FDI reutilizable, 32 dientes)
 - ✅ Fase 4B: HISTORIA DE URGENCIA (formulario + tabla historia_urgencia)
+- ✅ Fase 4C: HOJA DE EVOLUCION (tabla evolucion, entrada por visita; columna del tree configurable "Detalle")
 - ⬜ 4B: Historia Urgencia · 4C: Hoja Evolución · 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
 - ⬜ Fase 5: exportar PDF (SOLO cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
@@ -38,6 +39,8 @@ F. DRA. FAWIZA TAYLOR (7 pág = 5 registros admin: temp ambiente, insumos, ester
 | `historia_odontologica.py` | Formulario completo (identificación, anamnesis, hábitos, odontograma, examen oral 16 ítems N/AN, diagnóstico). **Checkbox "¿Es menor de edad?"** → muestra/oculta frame Acudiente (`_toggle_acudiente`, pack before=anamnesis). `validar()`: si menor → obliga apellido/nombre/parentesco/dirección/teléfono del acudiente; adulto → sin requisitos. `cargar()` deduce menor si hay datos de acudiente. Entries con `sticky="we"` + weight → 100% |
 | `historia.py` | Pestaña Historia: selector paciente + documento, lista de historias (**columnas id/fecha/motivo_consulta**), form con scroll. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F). `_guardar` llama `form.validar()` si existe (bloquea con aviso). ScrollableFrame: interior 100% ancho, scrollbar grueso, rueda del ratón (MouseWheel + Button-4/5, ignora Text) |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos del paciente (fecha DateEntry + nombre con prefill), motivo, 6 antecedentes personales (checkbuttons), antecedentes familiares, examen físico/radiológico, impresión diagnóstica, plan, firmas + CC. `cargar()`/`datos()`/`limpiar()`/`validar()` (obliga motivo). `prefill_nombre()` lo llama `historia.py` al crear form |
+| `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha + detalle (Text) + firmas (paciente/profesional). `validar()` obliga detalle. `listar_evolucion` devuelve `detalle AS motivo_consulta` para el tree |
+| Columna tree configurable | `DOCUMENTOS[...]["columna"]` (ej. "Detalle"); `_nueva()` llama `_refrescar_historias()` para actualizar encabezado y lista al cambiar de documento |
 | Tabla `historia_odontologica` | exámen oral y odontograma guardados como JSON en columnas TEXT |
 | Tabla `historia_urgencia` | antecedentes personales como 6 columnas INTEGER (0/1) |
 

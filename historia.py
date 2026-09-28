@@ -13,9 +13,15 @@ from db import (
     guardar_historia_urgencia,
     actualizar_historia_urgencia,
     borrar_historia_urgencia,
+    listar_evolucion,
+    get_evolucion,
+    guardar_evolucion,
+    actualizar_evolucion,
+    borrar_evolucion,
 )
 from historia_odontologica import HistoriaOdontologicaForm
 from historia_urgencia import HistoriaUrgenciaForm
+from historia_evolucion import HistoriaEvolucionForm
 
 DOCUMENTOS = {
     "Historia Odontologica": {"form": HistoriaOdontologicaForm,
@@ -23,13 +29,22 @@ DOCUMENTOS = {
                               "get": get_historia_od,
                               "guardar": guardar_historia_od,
                               "actualizar": actualizar_historia_od,
-                              "borrar": borrar_historia_od},
+                              "borrar": borrar_historia_od,
+                              "columna": "Motivo de consulta"},
     "Historia de Urgencia": {"form": HistoriaUrgenciaForm,
                              "listar": listar_historias_urgencia,
                              "get": get_historia_urgencia,
                              "guardar": guardar_historia_urgencia,
                              "actualizar": actualizar_historia_urgencia,
-                             "borrar": borrar_historia_urgencia},
+                             "borrar": borrar_historia_urgencia,
+                             "columna": "Motivo de consulta"},
+    "Hoja de Evolucion": {"form": HistoriaEvolucionForm,
+                          "listar": listar_evolucion,
+                          "get": get_evolucion,
+                          "guardar": guardar_evolucion,
+                          "actualizar": actualizar_evolucion,
+                          "borrar": borrar_evolucion,
+                          "columna": "Detalle"},
 }
 
 
@@ -150,9 +165,10 @@ class HistoriaTab(ttk.Frame):
     def _refrescar_historias(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
+        conf = self._config_doc()
+        self.tree.heading("motivo", text=conf.get("columna", "Motivo de consulta"))
         if not self._paciente_id:
             return
-        conf = self._config_doc()
         for h in conf["listar"](self._paciente_id):
             self.tree.insert("", "end", iid=str(h["id"]),
                              values=(h["id"], h["fecha"], h["motivo_consulta"]))
@@ -171,6 +187,7 @@ class HistoriaTab(ttk.Frame):
     def _nueva(self):
         self._historia_id = None
         self.tree.selection_remove(self.tree.selection())
+        self._refrescar_historias()
         for child in self.scroll.interior.winfo_children():
             child.destroy()
         conf = self._config_doc()
