@@ -1,7 +1,8 @@
+import datetime as dt
 import tkinter as tk
 from tkinter import ttk
 
-from tkcalendar import DateEntry
+from campo_fecha import CampoFecha
 
 ANTECEDENTES = [
     ("ant_quirurgicos", "Quirurgicos"),
@@ -22,9 +23,8 @@ class HistoriaUrgenciaForm(ttk.Frame):
         cuadro = ttk.LabelFrame(self, text="Datos del paciente", padding=10)
         cuadro.pack(fill="x")
 
-        self.fecha_entry = DateEntry(
-            cuadro, width=14, date_pattern="dd/mm/yyyy", locale="es_ES"
-        )
+        self.fecha_entry = CampoFecha(cuadro)
+        self.fecha_entry.set_date(dt.date.today())
         self.nombre_var = tk.StringVar()
         self.identificacion_var = tk.StringVar()
         self.edad_var = tk.StringVar()
@@ -178,6 +178,8 @@ class HistoriaUrgenciaForm(ttk.Frame):
 
     def validar(self):
         faltan = []
+        if self.fecha_entry.get_date() is None:
+            faltan.append("Fecha invalida (dd/mm/yyyy)")
         if not self.motivo.get("1.0", "end").strip():
             faltan.append("Motivo de la consulta")
         return faltan
@@ -186,8 +188,9 @@ class HistoriaUrgenciaForm(ttk.Frame):
         def texto(t):
             return t.get("1.0", "end").strip()
 
+        fecha = self.fecha_entry.get_date()
         return {
-            "fecha": self.fecha_entry.get_date().strftime("%Y-%m-%d"),
+            "fecha": fecha.strftime("%Y-%m-%d") if fecha else "",
             "nombre": self.nombre_var.get().strip(),
             "identificacion": self.identificacion_var.get().strip(),
             "edad": self.edad_var.get().strip(),

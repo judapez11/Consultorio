@@ -1,7 +1,8 @@
+import datetime as dt
 import tkinter as tk
 from tkinter import ttk
 
-from tkcalendar import DateEntry
+from campo_fecha import CampoFecha
 
 from odontograma import OdontogramaFrame
 
@@ -22,9 +23,8 @@ class HistoriaOdontologicaForm(ttk.Frame):
         cuadro = ttk.LabelFrame(self, text="1. Datos de identificacion", padding=10)
         cuadro.pack(fill="x")
 
-        self.fecha_entry = DateEntry(
-            cuadro, width=14, date_pattern="dd/mm/yyyy", locale="es_ES"
-        )
+        self.fecha_entry = CampoFecha(cuadro)
+        self.fecha_entry.set_date(dt.date.today())
         self.ocupacion_var = tk.StringVar()
         self.estado_civil_var = tk.StringVar()
         self.fecha_nac_var = tk.StringVar()
@@ -199,6 +199,8 @@ class HistoriaOdontologicaForm(ttk.Frame):
 
     def validar(self):
         faltan = []
+        if self.fecha_entry.get_date() is None:
+            faltan.append("Fecha de consulta invalida (dd/mm/yyyy)")
         if self.es_menor_var.get():
             campos = [
                 ("Primer apellido del acudiente", self.acu_a1),
@@ -217,8 +219,9 @@ class HistoriaOdontologicaForm(ttk.Frame):
             return t.get("1.0", "end").strip()
 
         examen = {item: var.get() for item, var in self.examen_vars.items()}
+        fecha = self.fecha_entry.get_date()
         return {
-            "fecha": self.fecha_entry.get_date().strftime("%Y-%m-%d"),
+            "fecha": fecha.strftime("%Y-%m-%d") if fecha else "",
             "ocupacion": self.ocupacion_var.get().strip(),
             "estado_civil": self.estado_civil_var.get().strip(),
             "fecha_nacimiento": self.fecha_nac_var.get().strip(),

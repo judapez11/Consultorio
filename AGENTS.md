@@ -28,12 +28,13 @@ cd ~/Documentos/Consultorio && ./run.sh
 | `db.py` | Conexión SQLite + DAO (pacientes, citas, historias odontológicas) |
 | `pacientes.py` | Pestaña Pacientes: CRUD + búsqueda sin tildes, filas rowheight=30 |
 | `agenda.py` | Pestaña Agenda: calendario tkcalendar, slots 30min 08:00-18:30, valida hora ocupada |
-| `historia.py` | Pestaña Historia: selector paciente/documento, lista (id/fecha/motivo), ScrollableFrame con rueda de ratón. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
+| `historia.py` | Pestaña Historia: selector paciente/documento (ttk.Combobox), lista (id/fecha/motivo), ScrollableFrame con rueda de ratón. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
 | `historia_odontologica.py` | Formulario Historia Odontológica (Fase 4A): identificación + checkbox menor/acudiente, anamnesis, hábitos, odontograma, examen oral, diagnóstico. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
 | `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `odontograma.py` | Canvas: grid 2×2 por cuadrante, cada cuadrante 4×2, 5 sectores/diente, paleta de estados, clic derecho = ausente. API `get_estados()`/`set_estados()` |
-| `mi_calendario.py` | Calendario propio en canvas (rápido); usado por fechas cuando se necesite |
+| `campo_fecha.py` | Campo de fecha editable con máscara dd/mm/yyyy (sin calendario; evita el bug de bloqueo del combo). `get_date()`/`set_date()`/`limpiar()` |
+| `mi_calendario.py` | Calendario propio en canvas (rápido). Actualmente sin uso directo (agenda usa tkcalendar; fechas usan campo_fecha) |
 | `run.sh` | Lanzador |
 | `Plantillas/` | **6 PDFs plantilla** de historias clínicas por replicar |
 | `MEMORIA.md` | **LEER PRIMERO**: estado actual, decisiones, fases. Actualizar al cierre de cada sesión |

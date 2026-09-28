@@ -143,6 +143,13 @@ class HistoriaTab(ttk.Frame):
         self._refrescar_pacientes()
         self._nueva()
 
+    def _set_opciones(self, menu, var, valores, seleccion):
+        menu["menu"].delete(0, "end")
+        for valor in valores:
+            menu["menu"].add_command(label=valor, command=tk._setit(var, valor))
+        if seleccion:
+            var.set(seleccion)
+
     def _refrescar_pacientes(self):
         self._pacientes = listar_pacientes()
         nombres = [p["nombre"] for p in self._pacientes]
