@@ -1,5 +1,6 @@
 import sqlite3
 import unicodedata
+import json
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,6 +33,64 @@ def init_db():
                 hora TEXT NOT NULL,
                 motivo TEXT,
                 estado TEXT DEFAULT 'pendiente',
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS historia_odontologica (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                ocupacion TEXT,
+                estado_civil TEXT,
+                fecha_nacimiento TEXT,
+                acudiente_apellido1 TEXT,
+                acudiente_apellido2 TEXT,
+                acudiente_nombre TEXT,
+                acudiente_direccion TEXT,
+                acudiente_telefono TEXT,
+                acudiente_parentesco TEXT,
+                antecedentes_personales TEXT,
+                antecedentes_familiares TEXT,
+                motivo_consulta TEXT,
+                cepillado TEXT,
+                seda TEXT,
+                enjuague TEXT,
+                examen_oral TEXT,
+                odontograma TEXT,
+                diagnostico_tejido_blando TEXT,
+                diagnostico_dental TEXT,
+                diagnostico_periodontal TEXT,
+                diagnostico_craneofacial TEXT,
+                diagnostico_oclusion TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS historia_urgencia (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                nombre TEXT,
+                identificacion TEXT,
+                edad TEXT,
+                direccion TEXT,
+                telefono TEXT,
+                acudiente TEXT,
+                motivo_consulta TEXT,
+                ant_quirurgicos INTEGER DEFAULT 0,
+                ant_patologicos INTEGER DEFAULT 0,
+                ant_toxicoalergicos INTEGER DEFAULT 0,
+                ant_transfusionales INTEGER DEFAULT 0,
+                ant_traumaticos INTEGER DEFAULT 0,
+                ant_otros INTEGER DEFAULT 0,
+                antecedentes_familiares TEXT,
+                examen_fisico TEXT,
+                examen_radiologico TEXT,
+                impresion_diagnostica TEXT,
+                plan_tratamiento TEXT,
+                firma_paciente TEXT,
+                cc_paciente TEXT,
+                firma_odontologo TEXT,
+                cc_odontologo TEXT,
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
             """
@@ -132,3 +191,146 @@ def hora_ocupada(fecha, hora, excluir_id=None):
                 "SELECT id FROM citas WHERE fecha=? AND hora=?", (fecha, hora)
             )
         return cur.fetchone() is not None
+
+
+COLUMNAS_HISTORIA_OD = [
+    "fecha", "ocupacion", "estado_civil", "fecha_nacimiento",
+    "acudiente_apellido1", "acudiente_apellido2", "acudiente_nombre",
+    "acudiente_direccion", "acudiente_telefono", "acudiente_parentesco",
+    "antecedentes_personales", "antecedentes_familiares", "motivo_consulta",
+    "cepillado", "seda", "enjuague",
+]
+
+
+def listar_historias_od(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM historia_odontologica"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_historia_od(hid):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT * FROM historia_odontologica WHERE id=?", (hid,)
+        )
+        fila = cur.fetchone()
+        if not fila:
+            return None
+        datos = dict(fila)
+        for clave in ("examen_oral", "odontograma"):
+            datos[clave] = json.loads(datos[clave] or "{}")
+        return datos
+
+
+def guardar_historia_od(paciente_id, datos):
+    valores = [datos.get(c, "") for c in COLUMNAS_HISTORIA_OD]
+    extras = (
+        json.dumps(datos.get("examen_oral") or {}),
+        json.dumps(datos.get("odontograma") or {}),
+        datos.get("diagnostico_tejido_blando", ""),
+        datos.get("diagnostico_dental", ""),
+        datos.get("diagnostico_periodontal", ""),
+        datos.get("diagnostico_craneofacial", ""),
+        datos.get("diagnostico_oclusion", ""),
+    )
+    columnas = COLUMNAS_HISTORIA_OD + [
+        "examen_oral", "odontograma", "diagnostico_tejido_blando",
+        "diagnostico_dental", "diagnostico_periodontal",
+        "diagnostico_craneofacial", "diagnostico_oclusion",
+    ]
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO historia_odontologica (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores, *extras),
+        )
+        return cur.lastrowid
+
+
+def actualizar_historia_od(hid, datos):
+    valores = [datos.get(c, "") for c in COLUMNAS_HISTORIA_OD]
+    extras = (
+        json.dumps(datos.get("examen_oral") or {}),
+        json.dumps(datos.get("odontograma") or {}),
+        datos.get("diagnostico_tejido_blando", ""),
+        datos.get("diagnostico_dental", ""),
+        datos.get("diagnostico_periodontal", ""),
+        datos.get("diagnostico_craneofacial", ""),
+        datos.get("diagnostico_oclusion", ""),
+    )
+    columnas = COLUMNAS_HISTORIA_OD + [
+        "examen_oral", "odontograma", "diagnostico_tejido_blando",
+        "diagnostico_dental", "diagnostico_periodontal",
+        "diagnostico_craneofacial", "diagnostico_oclusion",
+    ]
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE historia_odontologica SET {asignacion} WHERE id=?",
+            (*valores, *extras, hid),
+        )
+
+
+def borrar_historia_od(hid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM historia_odontologica WHERE id=?", (hid,))
+
+
+COLUMNAS_HISTORIA_URGENCIA = [
+    "fecha", "nombre", "identificacion", "edad", "direccion", "telefono",
+    "acudiente", "motivo_consulta",
+    "ant_quirurgicos", "ant_patologicos", "ant_toxicoalergicos",
+    "ant_transfusionales", "ant_traumaticos", "ant_otros",
+    "antecedentes_familiares", "examen_fisico", "examen_radiologico",
+    "impresion_diagnostica", "plan_tratamiento",
+    "firma_paciente", "cc_paciente", "firma_odontologo", "cc_odontologo",
+]
+
+
+def listar_historias_urgencia(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM historia_urgencia"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_historia_urgencia(hid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM historia_urgencia WHERE id=?", (hid,))
+        fila = cur.fetchone()
+        return dict(fila) if fila else None
+
+
+def guardar_historia_urgencia(paciente_id, datos):
+    columnas = COLUMNAS_HISTORIA_URGENCIA
+    valores = [datos.get(c, "") for c in columnas]
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO historia_urgencia (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores),
+        )
+        return cur.lastrowid
+
+
+def actualizar_historia_urgencia(hid, datos):
+    columnas = COLUMNAS_HISTORIA_URGENCIA
+    valores = [datos.get(c, "") for c in columnas]
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE historia_urgencia SET {asignacion} WHERE id=?",
+            (*valores, hid),
+        )
+
+
+def borrar_historia_urgencia(hid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM historia_urgencia WHERE id=?", (hid,))

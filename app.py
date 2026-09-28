@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from pacientes import PacientesTab
 from agenda import AgendaTab
+from historia import HistoriaTab
 
 
 def _placeholder(master, texto):
@@ -35,7 +36,7 @@ class App(tk.Tk):
 
         self.agenda_tab = AgendaTab(self._tabs)
         self.pacientes_tab = PacientesTab(self._tabs)
-        self.historia_tab = _placeholder(self._tabs, "Historia")
+        self.historia_tab = HistoriaTab(self._tabs)
 
         self._tabs.add(self.agenda_tab, text="Agenda")
         self._tabs.add(self.pacientes_tab, text="Pacientes")
