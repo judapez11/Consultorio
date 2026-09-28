@@ -8,8 +8,14 @@ from db import (
     guardar_historia_od,
     actualizar_historia_od,
     borrar_historia_od,
+    listar_historias_urgencia,
+    get_historia_urgencia,
+    guardar_historia_urgencia,
+    actualizar_historia_urgencia,
+    borrar_historia_urgencia,
 )
 from historia_odontologica import HistoriaOdontologicaForm
+from historia_urgencia import HistoriaUrgenciaForm
 
 DOCUMENTOS = {
     "Historia Odontologica": {"form": HistoriaOdontologicaForm,
@@ -18,6 +24,12 @@ DOCUMENTOS = {
                               "guardar": guardar_historia_od,
                               "actualizar": actualizar_historia_od,
                               "borrar": borrar_historia_od},
+    "Historia de Urgencia": {"form": HistoriaUrgenciaForm,
+                             "listar": listar_historias_urgencia,
+                             "get": get_historia_urgencia,
+                             "guardar": guardar_historia_urgencia,
+                             "actualizar": actualizar_historia_urgencia,
+                             "borrar": borrar_historia_urgencia},
 }
 
 
@@ -145,6 +157,17 @@ class HistoriaTab(ttk.Frame):
             self.tree.insert("", "end", iid=str(h["id"]),
                              values=(h["id"], h["fecha"], h["motivo_consulta"]))
 
+    def _nombre_paciente(self):
+        for p in self._pacientes:
+            if p["id"] == self._paciente_id:
+                return p["nombre"]
+        return ""
+
+    def _prefill_form(self):
+        prefill = getattr(self._form, "prefill_nombre", None)
+        if prefill:
+            prefill(self._nombre_paciente())
+
     def _nueva(self):
         self._historia_id = None
         self.tree.selection_remove(self.tree.selection())
@@ -153,6 +176,7 @@ class HistoriaTab(ttk.Frame):
         conf = self._config_doc()
         self._form = conf["form"](self.scroll.interior)
         self._form.pack(fill="both", expand=True)
+        self._prefill_form()
 
     def _seleccionar_historia(self, event):
         sel = self.tree.selection()

@@ -64,6 +64,35 @@ def init_db():
                 diagnostico_oclusion TEXT,
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS historia_urgencia (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                nombre TEXT,
+                identificacion TEXT,
+                edad TEXT,
+                direccion TEXT,
+                telefono TEXT,
+                acudiente TEXT,
+                motivo_consulta TEXT,
+                ant_quirurgicos INTEGER DEFAULT 0,
+                ant_patologicos INTEGER DEFAULT 0,
+                ant_toxicoalergicos INTEGER DEFAULT 0,
+                ant_transfusionales INTEGER DEFAULT 0,
+                ant_traumaticos INTEGER DEFAULT 0,
+                ant_otros INTEGER DEFAULT 0,
+                antecedentes_familiares TEXT,
+                examen_fisico TEXT,
+                examen_radiologico TEXT,
+                impresion_diagnostica TEXT,
+                plan_tratamiento TEXT,
+                firma_paciente TEXT,
+                cc_paciente TEXT,
+                firma_odontologo TEXT,
+                cc_odontologo TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
             """
         )
 
@@ -249,3 +278,59 @@ def actualizar_historia_od(hid, datos):
 def borrar_historia_od(hid):
     with get_conn() as conn:
         conn.execute("DELETE FROM historia_odontologica WHERE id=?", (hid,))
+
+
+COLUMNAS_HISTORIA_URGENCIA = [
+    "fecha", "nombre", "identificacion", "edad", "direccion", "telefono",
+    "acudiente", "motivo_consulta",
+    "ant_quirurgicos", "ant_patologicos", "ant_toxicoalergicos",
+    "ant_transfusionales", "ant_traumaticos", "ant_otros",
+    "antecedentes_familiares", "examen_fisico", "examen_radiologico",
+    "impresion_diagnostica", "plan_tratamiento",
+    "firma_paciente", "cc_paciente", "firma_odontologo", "cc_odontologo",
+]
+
+
+def listar_historias_urgencia(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM historia_urgencia"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_historia_urgencia(hid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM historia_urgencia WHERE id=?", (hid,))
+        fila = cur.fetchone()
+        return dict(fila) if fila else None
+
+
+def guardar_historia_urgencia(paciente_id, datos):
+    columnas = COLUMNAS_HISTORIA_URGENCIA
+    valores = [datos.get(c, "") for c in columnas]
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO historia_urgencia (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores),
+        )
+        return cur.lastrowid
+
+
+def actualizar_historia_urgencia(hid, datos):
+    columnas = COLUMNAS_HISTORIA_URGENCIA
+    valores = [datos.get(c, "") for c in columnas]
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE historia_urgencia SET {asignacion} WHERE id=?",
+            (*valores, hid),
+        )
+
+
+def borrar_historia_urgencia(hid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM historia_urgencia WHERE id=?", (hid,))
