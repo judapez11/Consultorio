@@ -93,6 +93,36 @@ def init_db():
                 cc_odontologo TEXT,
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS carta_dental (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                nombre TEXT,
+                apellidos TEXT,
+                edad TEXT,
+                num_documento TEXT,
+                tipo_documento TEXT,
+                entidad_solicitante TEXT,
+                motivo_consulta TEXT,
+                caries TEXT,
+                obturados TEXT,
+                examen TEXT,
+                odontograma TEXT,
+                plan_tratamiento TEXT,
+                firma TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS evolucion (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                detalle TEXT,
+                firma_paciente TEXT,
+                firma_profesional TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
             """
         )
 
@@ -334,3 +364,112 @@ def actualizar_historia_urgencia(hid, datos):
 def borrar_historia_urgencia(hid):
     with get_conn() as conn:
         conn.execute("DELETE FROM historia_urgencia WHERE id=?", (hid,))
+
+
+COLUMNAS_EVOLUCION = ["fecha", "detalle", "firma_paciente", "firma_profesional"]
+
+
+def listar_evolucion(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, detalle AS motivo_consulta FROM evolucion"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_evolucion(eid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM evolucion WHERE id=?", (eid,))
+        fila = cur.fetchone()
+        return dict(fila) if fila else None
+
+
+def guardar_evolucion(paciente_id, datos):
+    columnas = COLUMNAS_EVOLUCION
+    valores = [datos.get(c, "") for c in columnas]
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO evolucion (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores),
+        )
+        return cur.lastrowid
+
+
+def actualizar_evolucion(eid, datos):
+    columnas = COLUMNAS_EVOLUCION
+    valores = [datos.get(c, "") for c in columnas]
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE evolucion SET {asignacion} WHERE id=?",
+            (*valores, eid),
+        )
+
+
+def borrar_evolucion(eid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM evolucion WHERE id=?", (eid,))
+
+
+COLUMNAS_CARTA = [
+    "fecha", "nombre", "apellidos", "edad", "num_documento", "tipo_documento",
+    "entidad_solicitante", "motivo_consulta", "caries", "obturados",
+    "plan_tratamiento", "firma",
+]
+
+
+def listar_carta(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM carta_dental"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_carta(cid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM carta_dental WHERE id=?", (cid,))
+        fila = cur.fetchone()
+        if not fila:
+            return None
+        datos = dict(fila)
+        for clave in ("examen", "odontograma"):
+            datos[clave] = json.loads(datos[clave] or "{}")
+        return datos
+
+
+def guardar_carta(paciente_id, datos):
+    columnas = COLUMNAS_CARTA + ["examen", "odontograma"]
+    valores = [datos.get(c, "") for c in COLUMNAS_CARTA]
+    extras = (json.dumps(datos.get("examen") or {}),
+              json.dumps(datos.get("odontograma") or {}))
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO carta_dental (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores, *extras),
+        )
+        return cur.lastrowid
+
+
+def actualizar_carta(cid, datos):
+    columnas = COLUMNAS_CARTA + ["examen", "odontograma"]
+    valores = [datos.get(c, "") for c in COLUMNAS_CARTA]
+    extras = (json.dumps(datos.get("examen") or {}),
+              json.dumps(datos.get("odontograma") or {}))
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE carta_dental SET {asignacion} WHERE id=?",
+            (*valores, *extras, cid),
+        )
+
+
+def borrar_carta(cid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM carta_dental WHERE id=?", (cid,))

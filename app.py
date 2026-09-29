@@ -3,18 +3,7 @@ from tkinter import ttk
 
 from pacientes import PacientesTab
 from agenda import AgendaTab
-from historia import HistoriaTab
-
-
-def _placeholder(master, texto):
-    frame = ttk.Frame(master, padding=40)
-    ttk.Label(
-        frame,
-        text=texto,
-        font=("Segoe UI", 16),
-        anchor="center",
-    ).pack(expand=True, fill="both")
-    return frame
+from historia import DOCUMENTOS, DocumentoTab
 
 
 class App(tk.Tk):
@@ -36,8 +25,11 @@ class App(tk.Tk):
 
         self.agenda_tab = AgendaTab(self._tabs)
         self.pacientes_tab = PacientesTab(self._tabs)
-        self.historia_tab = HistoriaTab(self._tabs)
-
         self._tabs.add(self.agenda_tab, text="Agenda")
         self._tabs.add(self.pacientes_tab, text="Pacientes")
-        self._tabs.add(self.historia_tab, text="Historia")
+
+        self.documento_tabs = {}
+        for nombre, conf in DOCUMENTOS.items():
+            tab = DocumentoTab(self._tabs, nombre, conf)
+            self.documento_tabs[nombre] = tab
+            self._tabs.add(tab, text=nombre)

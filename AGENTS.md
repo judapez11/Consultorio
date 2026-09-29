@@ -24,15 +24,18 @@ cd ~/Documentos/Consultorio && ./run.sh
 | Archivo | Función |
 |---------|---------|
 | `main.py` | Lanzador: init_db + App |
-| `app.py` | Ventana principal (maximizada), pestañas: Agenda / Pacientes / Historia |
-| `db.py` | Conexión SQLite + DAO (pacientes, citas, historias odontológicas) |
+| `app.py` | Ventana principal (maximizada). **Barra global de paciente arriba** (`tk.Button` + `tk.Menu` con postcommand) + Notebook: Agenda, Pacientes, 1 pestaña por documento (`DOCUMENTOS`). Guarda `paciente_id`; al cambiar notifica a todas las tabs. Paciente global compartido (fuera del área de formularios → inmune al bug de bloqueo) |
+| `db.py` | Conexión SQLite + DAO (pacientes, citas, historias odontológicas, urgencia, evolución) |
 | `pacientes.py` | Pestaña Pacientes: CRUD + búsqueda sin tildes, filas rowheight=30 |
 | `agenda.py` | Pestaña Agenda: calendario tkcalendar, slots 30min 08:00-18:30, valida hora ocupada |
-| `historia.py` | Pestaña Historia: selector paciente/documento, lista (id/fecha/motivo), ScrollableFrame con rueda de ratón. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
+| `historia.py` | **`DocumentoTab`**: pestaña por tipo de documento. Selector de paciente = **`tk.Listbox` visible + scrollbar** (sin popup → robusto; escala a cientos de pacientes). Guarda: `tiene_contenido()` → confirmar antes de cambiar. Botón **Cancelar** descarta. `DOCUMENTOS` registra cada plantilla (4D-4F = entrada nueva → pestaña sola) |
 | `historia_odontologica.py` | Formulario Historia Odontológica (Fase 4A): identificación + checkbox menor/acudiente, anamnesis, hábitos, odontograma, examen oral, diagnóstico. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
+| `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |
+| `historia_carta.py` | Formulario Certificación Carta Dental (Fase 4D): datos + tipo doc (radios CC/TI/RC) + motivo + **odontograma reutilizado** + resumen SI/NO + examen 8 ítems en canvas + plan + firma. `cargar()`/`datos()`/`limpiar()`/`validar()`/`tiene_contenido()`/`prefill_nombre()` |
 | `odontograma.py` | Canvas: grid 2×2 por cuadrante, cada cuadrante 4×2, 5 sectores/diente, paleta de estados, clic derecho = ausente. API `get_estados()`/`set_estados()` |
-| `mi_calendario.py` | Calendario propio en canvas (rápido); usado por fechas cuando se necesite |
+| `campo_fecha.py` | Campo de fecha editable con máscara dd/mm/yyyy (sin calendario; evita el bug de bloqueo del combo). `get_date()`/`set_date()`/`limpiar()` |
+| `mi_calendario.py` | Calendario propio en canvas (rápido). Actualmente sin uso directo (agenda usa tkcalendar; fechas usan campo_fecha) |
 | `run.sh` | Lanzador |
 | `Plantillas/` | **6 PDFs plantilla** de historias clínicas por replicar |
 | `MEMORIA.md` | **LEER PRIMERO**: estado actual, decisiones, fases. Actualizar al cierre de cada sesión |
@@ -44,7 +47,9 @@ cd ~/Documentos/Consultorio && ./run.sh
 - ✅ Fase 3: agenda + calendario
 - ✅ Fase 4A: HISTORIA ODONTOLOGICA (+ componente ODONTOGRAMA por sectores)
 - ✅ Fase 4B: HISTORIA DE URGENCIA
-- ⬜ 4C: Hoja Evolución · 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
+- ✅ Fase 4C: HOJA DE EVOLUCION
+- ✅ Fase 4D: CERTIFICACION CARTA DENTAL (reusa odontograma)
+- ⬜ 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
 - ⬜ Fase 5: exportar PDF (solo cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
 

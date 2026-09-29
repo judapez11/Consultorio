@@ -1,7 +1,8 @@
+import datetime as dt
 import tkinter as tk
 from tkinter import ttk
 
-from tkcalendar import DateEntry
+from campo_fecha import CampoFecha
 
 from odontograma import OdontogramaFrame
 
@@ -22,9 +23,8 @@ class HistoriaOdontologicaForm(ttk.Frame):
         cuadro = ttk.LabelFrame(self, text="1. Datos de identificacion", padding=10)
         cuadro.pack(fill="x")
 
-        self.fecha_entry = DateEntry(
-            cuadro, width=14, date_pattern="dd/mm/yyyy", locale="es_ES"
-        )
+        self.fecha_entry = CampoFecha(cuadro)
+        self.fecha_entry.set_date(dt.date.today())
         self.ocupacion_var = tk.StringVar()
         self.estado_civil_var = tk.StringVar()
         self.fecha_nac_var = tk.StringVar()
@@ -197,8 +197,31 @@ class HistoriaOdontologicaForm(ttk.Frame):
         self.es_menor_var.set(es_menor)
         self._toggle_acudiente()
 
+    def tiene_contenido(self):
+        for var in (self.ocupacion_var, self.estado_civil_var, self.fecha_nac_var,
+                    self.acu_a1, self.acu_a2, self.acu_nom, self.acu_dir, self.acu_tel,
+                    self.acu_par, self.cepillado_var, self.seda_var, self.enjuague_var):
+            if var.get().strip():
+                return True
+        for t in (self.ant_pers, self.ant_fam, self.motivo, self.dx_blando,
+                  self.dx_dental, self.dx_perio, self.dx_craneo, self.dx_oclusion):
+            if t.get("1.0", "end").strip():
+                return True
+        if self.es_menor_var.get():
+            return True
+        for var in self.examen_vars.values():
+            if var.get() != "N":
+                return True
+        for zonas in self.odontograma.get_estados().values():
+            for estado in zonas.values():
+                if estado != "Sano":
+                    return True
+        return False
+
     def validar(self):
         faltan = []
+        if self.fecha_entry.get_date() is None:
+            faltan.append("Fecha de consulta invalida (dd/mm/yyyy)")
         if self.es_menor_var.get():
             campos = [
                 ("Primer apellido del acudiente", self.acu_a1),
@@ -217,8 +240,9 @@ class HistoriaOdontologicaForm(ttk.Frame):
             return t.get("1.0", "end").strip()
 
         examen = {item: var.get() for item, var in self.examen_vars.items()}
+        fecha = self.fecha_entry.get_date()
         return {
-            "fecha": self.fecha_entry.get_date().strftime("%Y-%m-%d"),
+            "fecha": fecha.strftime("%Y-%m-%d") if fecha else "",
             "ocupacion": self.ocupacion_var.get().strip(),
             "estado_civil": self.estado_civil_var.get().strip(),
             "fecha_nacimiento": self.fecha_nac_var.get().strip(),
