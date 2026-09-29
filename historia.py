@@ -23,11 +23,17 @@ from db import (
     guardar_carta,
     actualizar_carta,
     borrar_carta,
+    listar_historias_endodoncia,
+    get_historia_endodoncia,
+    guardar_historia_endodoncia,
+    actualizar_historia_endodoncia,
+    borrar_historia_endodoncia,
 )
 from historia_odontologica import HistoriaOdontologicaForm
 from historia_urgencia import HistoriaUrgenciaForm
 from historia_evolucion import HistoriaEvolucionForm
 from historia_carta import HistoriaCartaForm
+from historia_endodoncia import HistoriaEndodonciaForm
 
 DOCUMENTOS = {
     "Historia Odontologica": {"form": HistoriaOdontologicaForm,
@@ -58,6 +64,13 @@ DOCUMENTOS = {
                                    "actualizar": actualizar_carta,
                                    "borrar": borrar_carta,
                                    "columna": "Motivo de consulta"},
+    "Historia de Endodoncia": {"form": HistoriaEndodonciaForm,
+                               "listar": listar_historias_endodoncia,
+                               "get": get_historia_endodoncia,
+                               "guardar": guardar_historia_endodoncia,
+                               "actualizar": actualizar_historia_endodoncia,
+                               "borrar": borrar_historia_endodoncia,
+                               "columna": "Motivo de consulta"},
 }
 
 

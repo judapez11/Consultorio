@@ -114,6 +114,38 @@ def init_db():
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS historia_endodoncia (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                nombre TEXT,
+                identificacion TEXT,
+                edad TEXT,
+                direccion TEXT,
+                telefono TEXT,
+                referido_por TEXT,
+                eps TEXT,
+                motivo_consulta TEXT,
+                antecedentes TEXT,
+                pa TEXT,
+                fr TEXT,
+                fc TEXT,
+                observaciones TEXT,
+                antecedentes_familiares TEXT,
+                diente_tratar TEXT,
+                examen_clinico TEXT,
+                examen_radiografico TEXT,
+                dolor TEXT,
+                diagnostico TEXT,
+                pronostico TEXT,
+                plan_tratamiento TEXT,
+                conductos TEXT,
+                observaciones_finales TEXT,
+                firma_paciente TEXT,
+                firma_endodoncista TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS evolucion (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 paciente_id INTEGER NOT NULL,
@@ -473,3 +505,66 @@ def actualizar_carta(cid, datos):
 def borrar_carta(cid):
     with get_conn() as conn:
         conn.execute("DELETE FROM carta_dental WHERE id=?", (cid,))
+
+
+COLUMNAS_ENDODONCIA = [
+    "fecha", "nombre", "identificacion", "edad", "direccion", "telefono",
+    "referido_por", "eps", "motivo_consulta", "pa", "fr", "fc",
+    "observaciones", "antecedentes_familiares", "diente_tratar",
+    "diagnostico", "pronostico", "plan_tratamiento",
+    "observaciones_finales", "firma_paciente", "firma_endodoncista",
+]
+JSON_ENDODONCIA = ["antecedentes", "examen_clinico", "examen_radiografico",
+                   "dolor", "conductos"]
+
+
+def listar_historias_endodoncia(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM historia_endodoncia"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_historia_endodoncia(hid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM historia_endodoncia WHERE id=?", (hid,))
+        fila = cur.fetchone()
+        if not fila:
+            return None
+        datos = dict(fila)
+        for clave in JSON_ENDODONCIA:
+            datos[clave] = json.loads(datos[clave] or "{}")
+        return datos
+
+
+def guardar_historia_endodoncia(paciente_id, datos):
+    columnas = COLUMNAS_ENDODONCIA + JSON_ENDODONCIA
+    valores = [datos.get(c, "") for c in COLUMNAS_ENDODONCIA]
+    extras = [json.dumps(datos.get(c) or {}) for c in JSON_ENDODONCIA]
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO historia_endodoncia (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores, *extras),
+        )
+        return cur.lastrowid
+
+
+def actualizar_historia_endodoncia(hid, datos):
+    columnas = COLUMNAS_ENDODONCIA + JSON_ENDODONCIA
+    valores = [datos.get(c, "") for c in COLUMNAS_ENDODONCIA]
+    extras = [json.dumps(datos.get(c) or {}) for c in JSON_ENDODONCIA]
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE historia_endodoncia SET {asignacion} WHERE id=?",
+            (*valores, *extras, hid),
+        )
+
+
+def borrar_historia_endodoncia(hid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM historia_endodoncia WHERE id=?", (hid,))
