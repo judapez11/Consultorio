@@ -18,10 +18,16 @@ from db import (
     guardar_evolucion,
     actualizar_evolucion,
     borrar_evolucion,
+    listar_carta,
+    get_carta,
+    guardar_carta,
+    actualizar_carta,
+    borrar_carta,
 )
 from historia_odontologica import HistoriaOdontologicaForm
 from historia_urgencia import HistoriaUrgenciaForm
 from historia_evolucion import HistoriaEvolucionForm
+from historia_carta import HistoriaCartaForm
 
 DOCUMENTOS = {
     "Historia Odontologica": {"form": HistoriaOdontologicaForm,
@@ -45,6 +51,13 @@ DOCUMENTOS = {
                           "actualizar": actualizar_evolucion,
                           "borrar": borrar_evolucion,
                           "columna": "Detalle"},
+    "Certificacion Carta Dental": {"form": HistoriaCartaForm,
+                                   "listar": listar_carta,
+                                   "get": get_carta,
+                                   "guardar": guardar_carta,
+                                   "actualizar": actualizar_carta,
+                                   "borrar": borrar_carta,
+                                   "columna": "Motivo de consulta"},
 }
 
 

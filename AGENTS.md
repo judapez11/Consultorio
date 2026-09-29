@@ -32,6 +32,7 @@ cd ~/Documentos/Consultorio && ./run.sh
 | `historia_odontologica.py` | Formulario Historia Odontológica (Fase 4A): identificación + checkbox menor/acudiente, anamnesis, hábitos, odontograma, examen oral, diagnóstico. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
 | `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |
+| `historia_carta.py` | Formulario Certificación Carta Dental (Fase 4D): datos + tipo doc (radios CC/TI/RC) + motivo + **odontograma reutilizado** + resumen SI/NO + examen 8 ítems en canvas + plan + firma. `cargar()`/`datos()`/`limpiar()`/`validar()`/`tiene_contenido()`/`prefill_nombre()` |
 | `odontograma.py` | Canvas: grid 2×2 por cuadrante, cada cuadrante 4×2, 5 sectores/diente, paleta de estados, clic derecho = ausente. API `get_estados()`/`set_estados()` |
 | `campo_fecha.py` | Campo de fecha editable con máscara dd/mm/yyyy (sin calendario; evita el bug de bloqueo del combo). `get_date()`/`set_date()`/`limpiar()` |
 | `mi_calendario.py` | Calendario propio en canvas (rápido). Actualmente sin uso directo (agenda usa tkcalendar; fechas usan campo_fecha) |
@@ -47,7 +48,8 @@ cd ~/Documentos/Consultorio && ./run.sh
 - ✅ Fase 4A: HISTORIA ODONTOLOGICA (+ componente ODONTOGRAMA por sectores)
 - ✅ Fase 4B: HISTORIA DE URGENCIA
 - ✅ Fase 4C: HOJA DE EVOLUCION
-- ⬜ 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
+- ✅ Fase 4D: CERTIFICACION CARTA DENTAL (reusa odontograma)
+- ⬜ 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
 - ⬜ Fase 5: exportar PDF (solo cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
 

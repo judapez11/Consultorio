@@ -94,6 +94,26 @@ def init_db():
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS carta_dental (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                fecha TEXT NOT NULL,
+                nombre TEXT,
+                apellidos TEXT,
+                edad TEXT,
+                num_documento TEXT,
+                tipo_documento TEXT,
+                entidad_solicitante TEXT,
+                motivo_consulta TEXT,
+                caries TEXT,
+                obturados TEXT,
+                examen TEXT,
+                odontograma TEXT,
+                plan_tratamiento TEXT,
+                firma TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS evolucion (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 paciente_id INTEGER NOT NULL,
@@ -392,3 +412,64 @@ def actualizar_evolucion(eid, datos):
 def borrar_evolucion(eid):
     with get_conn() as conn:
         conn.execute("DELETE FROM evolucion WHERE id=?", (eid,))
+
+
+COLUMNAS_CARTA = [
+    "fecha", "nombre", "apellidos", "edad", "num_documento", "tipo_documento",
+    "entidad_solicitante", "motivo_consulta", "caries", "obturados",
+    "plan_tratamiento", "firma",
+]
+
+
+def listar_carta(paciente_id):
+    with get_conn() as conn:
+        cur = conn.execute(
+            "SELECT id, fecha, motivo_consulta FROM carta_dental"
+            " WHERE paciente_id=? ORDER BY fecha DESC",
+            (paciente_id,),
+        )
+        return cur.fetchall()
+
+
+def get_carta(cid):
+    with get_conn() as conn:
+        cur = conn.execute("SELECT * FROM carta_dental WHERE id=?", (cid,))
+        fila = cur.fetchone()
+        if not fila:
+            return None
+        datos = dict(fila)
+        for clave in ("examen", "odontograma"):
+            datos[clave] = json.loads(datos[clave] or "{}")
+        return datos
+
+
+def guardar_carta(paciente_id, datos):
+    columnas = COLUMNAS_CARTA + ["examen", "odontograma"]
+    valores = [datos.get(c, "") for c in COLUMNAS_CARTA]
+    extras = (json.dumps(datos.get("examen") or {}),
+              json.dumps(datos.get("odontograma") or {}))
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"INSERT INTO carta_dental (paciente_id, {', '.join(columnas)})"
+            f" VALUES (?, {', '.join('?' * len(columnas))})",
+            (paciente_id, *valores, *extras),
+        )
+        return cur.lastrowid
+
+
+def actualizar_carta(cid, datos):
+    columnas = COLUMNAS_CARTA + ["examen", "odontograma"]
+    valores = [datos.get(c, "") for c in COLUMNAS_CARTA]
+    extras = (json.dumps(datos.get("examen") or {}),
+              json.dumps(datos.get("odontograma") or {}))
+    asignacion = ", ".join(f"{c}=?" for c in columnas)
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE carta_dental SET {asignacion} WHERE id=?",
+            (*valores, *extras, cid),
+        )
+
+
+def borrar_carta(cid):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM carta_dental WHERE id=?", (cid,))

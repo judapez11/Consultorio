@@ -9,6 +9,7 @@
 - ✅ Fase 4A: HISTORIA ODONTOLOGICA + componente ODONTOGRAMA (cuadrícula FDI reutilizable, 32 dientes)
 - ✅ Fase 4B: HISTORIA DE URGENCIA (formulario + tabla historia_urgencia)
 - ✅ Fase 4C: HOJA DE EVOLUCION (tabla evolucion, entrada por visita; columna del tree configurable "Detalle")
+- ✅ Fase 4D: CERTIFICACION CARTA DENTAL (tabla carta_dental, reusa OdontogramaFrame; examen 8 ítems SI/NO en canvas; tipo doc = radios CC/TI/RC)
 - ⬜ 4B: Historia Urgencia · 4C: Hoja Evolución · 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
 - ⬜ Fase 5: exportar PDF (SOLO cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
