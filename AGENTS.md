@@ -24,11 +24,11 @@ cd ~/Documentos/Consultorio && ./run.sh
 | Archivo | Función |
 |---------|---------|
 | `main.py` | Lanzador: init_db + App |
-| `app.py` | Ventana principal (maximizada), pestañas: Agenda / Pacientes / Historia |
-| `db.py` | Conexión SQLite + DAO (pacientes, citas, historias odontológicas) |
+| `app.py` | Ventana principal (maximizada). **Barra global de paciente arriba** (`tk.Button` + `tk.Menu` con postcommand) + Notebook: Agenda, Pacientes, 1 pestaña por documento (`DOCUMENTOS`). Guarda `paciente_id`; al cambiar notifica a todas las tabs. Paciente global compartido (fuera del área de formularios → inmune al bug de bloqueo) |
+| `db.py` | Conexión SQLite + DAO (pacientes, citas, historias odontológicas, urgencia, evolución) |
 | `pacientes.py` | Pestaña Pacientes: CRUD + búsqueda sin tildes, filas rowheight=30 |
 | `agenda.py` | Pestaña Agenda: calendario tkcalendar, slots 30min 08:00-18:30, valida hora ocupada |
-| `historia.py` | Pestaña Historia: selector paciente/documento (ttk.Combobox), lista (id/fecha/motivo), ScrollableFrame con rueda de ratón. Tabla `DOCUMENTOS` registra cada plantilla (extensible a 4B-4F) |
+| `historia.py` | **`DocumentoTab`**: pestaña por tipo de documento. Selector de paciente = **`tk.Listbox` visible + scrollbar** (sin popup → robusto; escala a cientos de pacientes). Guarda: `tiene_contenido()` → confirmar antes de cambiar. Botón **Cancelar** descarta. `DOCUMENTOS` registra cada plantilla (4D-4F = entrada nueva → pestaña sola) |
 | `historia_odontologica.py` | Formulario Historia Odontológica (Fase 4A): identificación + checkbox menor/acudiente, anamnesis, hábitos, odontograma, examen oral, diagnóstico. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
 | `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |

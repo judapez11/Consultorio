@@ -176,6 +176,21 @@ class HistoriaUrgenciaForm(ttk.Frame):
             if valor:
                 texto.insert("1.0", valor)
 
+    def tiene_contenido(self):
+        for var in (self.nombre_var, self.identificacion_var, self.edad_var,
+                    self.direccion_var, self.telefono_var, self.acudiente_var,
+                    self.firma_pac_var, self.cc_pac_var,
+                    self.firma_odo_var, self.cc_odo_var):
+            if var.get().strip():
+                return True
+        if any(v.get() for v in self.ant_vars.values()):
+            return True
+        for t in (self.motivo, self.ant_fam, self.examen_fisico, self.examen_radio,
+                  self.impresion, self.plan):
+            if t.get("1.0", "end").strip():
+                return True
+        return False
+
     def validar(self):
         faltan = []
         if self.fecha_entry.get_date() is None:

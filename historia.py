@@ -78,12 +78,12 @@ class ScrollableFrame(ttk.Frame):
         self.canvas.itemconfigure(self._ventana, width=event.width)
 
     def _rueda(self, event):
-        if isinstance(event.widget, tk.Text):
+        if isinstance(event.widget, (tk.Text, tk.Listbox)):
             return
         self.canvas.yview_scroll(int(-event.delta / 120), "units")
 
     def _rueda_linux(self, event):
-        if isinstance(event.widget, tk.Text):
+        if isinstance(event.widget, (tk.Text, tk.Listbox)):
             return
         if event.num == 4:
             self.canvas.yview_scroll(-1, "units")
@@ -91,30 +91,40 @@ class ScrollableFrame(ttk.Frame):
             self.canvas.yview_scroll(1, "units")
 
 
-class HistoriaTab(ttk.Frame):
-    def __init__(self, master):
+class DocumentoTab(ttk.Frame):
+    """Pestana para un tipo de documento: selector de paciente + lista + form."""
+
+    def __init__(self, master, nombre_doc, conf):
         super().__init__(master, padding=10)
+        self._nombre_doc = nombre_doc
+        self._conf = conf
         self._paciente_id = None
         self._historia_id = None
         self._form = None
+        self._pacientes = []
         self._build()
 
     def _build(self):
         top = ttk.Frame(self)
         top.pack(fill="x")
 
-        ttk.Label(top, text="Paciente:").pack(side="left")
-        self.combo_pac = ttk.Combobox(top, state="readonly", width=40)
-        self.combo_pac.pack(side="left", padx=6)
-        self.combo_pac.bind("<<ComboboxSelected>>", lambda e: self._cargar_paciente())
+        ttk.Label(top, text="Paciente:", font=("Segoe UI", 11, "bold")).pack(side="left")
 
-        ttk.Label(top, text="Documento:").pack(side="left", padx=(16, 0))
-        self.combo_doc = ttk.Combobox(
-            top, values=list(DOCUMENTOS), state="readonly", width=24
+        lista_frame = ttk.Frame(top)
+        lista_frame.pack(side="left", fill="x", expand=True, padx=6)
+        self._pac_list = tk.Listbox(
+            lista_frame, height=6, exportselection=False,
+            activestyle="dotbox", font=("Segoe UI", 11),
         )
-        self.combo_doc.set("Historia Odontologica")
-        self.combo_doc.pack(side="left", padx=6)
-        self.combo_doc.bind("<<ComboboxSelected>>", lambda e: self._nueva())
+        scroll = ttk.Scrollbar(lista_frame, orient="vertical",
+                               command=self._pac_list.yview)
+        self._pac_list.configure(yscrollcommand=scroll.set)
+        self._pac_list.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="left", fill="y")
+        self._pac_list.bind("<<ListboxSelect>>", self._list_seleccion)
+        self._pac_list.bind("<MouseWheel>", self._rueda_lista)
+        self._pac_list.bind("<Button-4>", self._rueda_lista_linux)
+        self._pac_list.bind("<Button-5>", self._rueda_lista_linux)
 
         medio = ttk.Frame(self)
         medio.pack(fill="x", pady=8)
@@ -124,7 +134,7 @@ class HistoriaTab(ttk.Frame):
                                  show="headings", height=5, selectmode="browse")
         self.tree.heading("id", text="ID")
         self.tree.heading("fecha", text="Fecha")
-        self.tree.heading("motivo", text="Motivo de consulta")
+        self.tree.heading("motivo", text=self._conf.get("columna", "Motivo de consulta"))
         self.tree.column("id", width=60, stretch=False)
         self.tree.column("fecha", width=120, stretch=False)
         self.tree.column("motivo", width=320)
@@ -135,7 +145,8 @@ class HistoriaTab(ttk.Frame):
         botones.pack(fill="x", pady=(6, 0))
         ttk.Button(botones, text="Nueva", command=self._nueva).pack(side="left")
         ttk.Button(botones, text="Guardar", command=self._guardar).pack(side="left", padx=8)
-        ttk.Button(botones, text="Borrar", command=self._borrar).pack(side="left")
+        ttk.Button(botones, text="Cancelar", command=self._cancelar).pack(side="left")
+        ttk.Button(botones, text="Borrar", command=self._borrar).pack(side="left", padx=8)
 
         self.scroll = ScrollableFrame(self)
         self.scroll.pack(fill="both", expand=True, pady=(8, 0))
@@ -143,40 +154,79 @@ class HistoriaTab(ttk.Frame):
         self._refrescar_pacientes()
         self._nueva()
 
-    def _set_opciones(self, menu, var, valores, seleccion):
-        menu["menu"].delete(0, "end")
-        for valor in valores:
-            menu["menu"].add_command(label=valor, command=tk._setit(var, valor))
-        if seleccion:
-            var.set(seleccion)
-
-    def _refrescar_pacientes(self):
+    def _cargar_lista(self):
         self._pacientes = listar_pacientes()
-        nombres = [p["nombre"] for p in self._pacientes]
-        self.combo_pac["values"] = nombres
-        if nombres:
-            self.combo_pac.set(nombres[0])
-            self._paciente_id = self._pacientes[0]["id"]
-            self._refrescar_historias()
+        self._pac_list.delete(0, "end")
+        for p in self._pacientes:
+            self._pac_list.insert("end", p["nombre"])
 
-    def _cargar_paciente(self):
-        idx = self.combo_pac.current()
-        self._paciente_id = self._pacientes[idx]["id"] if idx >= 0 else None
+    def _index_actual(self):
+        for i, p in enumerate(self._pacientes):
+            if p["id"] == self._paciente_id:
+                return i
+        return -1
+
+    def _fijar_lista(self):
+        self._pac_list.selection_clear(0, "end")
+        idx = self._index_actual()
+        if idx >= 0:
+            self._pac_list.selection_set(idx)
+            self._pac_list.see(idx)
+
+    def _rueda_lista(self, event):
+        self._pac_list.yview_scroll(int(-event.delta / 120), "units")
+        return "break"
+
+    def _rueda_lista_linux(self, event):
+        if event.num == 4:
+            self._pac_list.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self._pac_list.yview_scroll(1, "units")
+        return "break"
+
+    def _list_seleccion(self, event):
+        sel = self._pac_list.curselection()
+        if not sel:
+            return
+        self._intentar_cambiar(sel[0])
+
+    def _intentar_cambiar(self, idx):
+        if idx == self._index_actual():
+            return
+        if self._form is not None and self._form.tiene_contenido():
+            if not messagebox.askyesno(
+                    "Cambiar paciente",
+                    "El formulario tiene datos sin guardar.\n"
+                    "¿Descartarlos y cambiar de paciente?"):
+                self._fijar_lista()
+                return
+        self._cambiar_a(idx)
+
+    def _cambiar_a(self, idx):
+        p = self._pacientes[idx]
+        self._paciente_id = p["id"]
+        self._fijar_lista()
         self._refrescar_historias()
         self._nueva()
 
+    def _refrescar_pacientes(self):
+        self._cargar_lista()
+        if self._pacientes:
+            self._paciente_id = self._pacientes[0]["id"]
+        else:
+            self._paciente_id = None
+        self._fijar_lista()
+        self._refrescar_historias()
+
     def _config_doc(self):
-        nombre = self.combo_doc.get()
-        return DOCUMENTOS.get(nombre)
+        return self._conf
 
     def _refrescar_historias(self):
         for item in self.tree.get_children():
             self.tree.delete(item)
-        conf = self._config_doc()
-        self.tree.heading("motivo", text=conf.get("columna", "Motivo de consulta"))
         if not self._paciente_id:
             return
-        for h in conf["listar"](self._paciente_id):
+        for h in self._conf["listar"](self._paciente_id):
             self.tree.insert("", "end", iid=str(h["id"]),
                              values=(h["id"], h["fecha"], h["motivo_consulta"]))
 
@@ -197,24 +247,25 @@ class HistoriaTab(ttk.Frame):
         self._refrescar_historias()
         for child in self.scroll.interior.winfo_children():
             child.destroy()
-        conf = self._config_doc()
-        self._form = conf["form"](self.scroll.interior)
+        self._form = self._conf["form"](self.scroll.interior)
         self._form.pack(fill="both", expand=True)
         self._prefill_form()
+
+    def _cancelar(self):
+        self._nueva()
 
     def _seleccionar_historia(self, event):
         sel = self.tree.selection()
         if not sel:
             return
         hid = int(sel[0])
-        conf = self._config_doc()
-        datos = conf["get"](hid)
+        datos = self._conf["get"](hid)
         if not datos:
             return
         self._historia_id = hid
         for child in self.scroll.interior.winfo_children():
             child.destroy()
-        self._form = conf["form"](self.scroll.interior)
+        self._form = self._conf["form"](self.scroll.interior)
         self._form.pack(fill="both", expand=True)
         self._form.cargar(datos)
 
@@ -224,7 +275,6 @@ class HistoriaTab(ttk.Frame):
             return
         if not self._form:
             return
-        conf = self._config_doc()
         validar = getattr(self._form, "validar", None)
         if validar:
             faltan = validar()
@@ -235,10 +285,10 @@ class HistoriaTab(ttk.Frame):
                 return
         datos = self._form.datos()
         if self._historia_id is None:
-            conf["guardar"](self._paciente_id, datos)
+            self._conf["guardar"](self._paciente_id, datos)
             messagebox.showinfo("Guardado", "Historia guardada.")
         else:
-            conf["actualizar"](self._historia_id, datos)
+            self._conf["actualizar"](self._historia_id, datos)
             messagebox.showinfo("Guardado", "Historia actualizada.")
         self._refrescar_historias()
 
@@ -247,7 +297,6 @@ class HistoriaTab(ttk.Frame):
             messagebox.showinfo("Aviso", "Selecciona una historia de la lista.")
             return
         if messagebox.askyesno("Confirmar", "¿Borrar esta historia?"):
-            conf = self._config_doc()
-            conf["borrar"](self._historia_id)
+            self._conf["borrar"](self._historia_id)
             self._nueva()
             self._refrescar_historias()

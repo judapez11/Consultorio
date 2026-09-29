@@ -39,6 +39,9 @@ class HistoriaEvolucionForm(ttk.Frame):
         if detalle:
             self.detalle.insert("1.0", detalle)
 
+    def tiene_contenido(self):
+        return bool(self.detalle.get("1.0", "end").strip())
+
     def validar(self):
         faltan = []
         if self.fecha_entry.get_date() is None:

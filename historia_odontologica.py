@@ -197,6 +197,27 @@ class HistoriaOdontologicaForm(ttk.Frame):
         self.es_menor_var.set(es_menor)
         self._toggle_acudiente()
 
+    def tiene_contenido(self):
+        for var in (self.ocupacion_var, self.estado_civil_var, self.fecha_nac_var,
+                    self.acu_a1, self.acu_a2, self.acu_nom, self.acu_dir, self.acu_tel,
+                    self.acu_par, self.cepillado_var, self.seda_var, self.enjuague_var):
+            if var.get().strip():
+                return True
+        for t in (self.ant_pers, self.ant_fam, self.motivo, self.dx_blando,
+                  self.dx_dental, self.dx_perio, self.dx_craneo, self.dx_oclusion):
+            if t.get("1.0", "end").strip():
+                return True
+        if self.es_menor_var.get():
+            return True
+        for var in self.examen_vars.values():
+            if var.get() != "N":
+                return True
+        for zonas in self.odontograma.get_estados().values():
+            for estado in zonas.values():
+                if estado != "Sano":
+                    return True
+        return False
+
     def validar(self):
         faltan = []
         if self.fecha_entry.get_date() is None:

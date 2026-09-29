@@ -38,7 +38,7 @@ class PacientesTab(ttk.Frame):
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("telefono", text="Teléfono")
-        self.tree.column("id", width=50, stretch=False)
+        self.tree.column("id", width=100, stretch=False)
         self.tree.column("nombre", width=200)
         self.tree.column("telefono", width=120)
         scroll = ttk.Scrollbar(medio, orient="vertical", command=self.tree.yview)
