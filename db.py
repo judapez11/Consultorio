@@ -155,6 +155,55 @@ def init_db():
                 firma_profesional TEXT,
                 FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS reg_temp_ambiente (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT NOT NULL,
+                temp_8am TEXT,
+                temp_4pm TEXT,
+                realizo TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS reg_temp_nevera (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT NOT NULL,
+                temp_8am TEXT,
+                temp_4pm TEXT,
+                realizo TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS reg_insumos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha_compra TEXT,
+                producto TEXT,
+                marca TEXT,
+                cantidad TEXT,
+                referencia TEXT,
+                registro_invima TEXT,
+                condicion_almacenamiento TEXT,
+                fecha_vencimiento TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS reg_esterilizacion (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT,
+                operador TEXT,
+                tipo_empaque TEXT,
+                tipo_material TEXT,
+                tiempo TEXT,
+                temperatura TEXT,
+                cinta_indicadora TEXT,
+                control_quimico TEXT,
+                cinta_resultado TEXT,
+                control_resultado TEXT,
+                verificacion TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS reg_glutaraldehido (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha_inicio TEXT,
+                fecha_cambio TEXT
+            );
             """
         )
 
@@ -568,3 +617,76 @@ def actualizar_historia_endodoncia(hid, datos):
 def borrar_historia_endodoncia(hid):
     with get_conn() as conn:
         conn.execute("DELETE FROM historia_endodoncia WHERE id=?", (hid,))
+
+REGISTROS = {
+    "temp_ambiente": {
+        "tabla": "reg_temp_ambiente",
+        "columnas": ["fecha", "temp_8am", "temp_4pm", "realizo"],
+    },
+    "temp_nevera": {
+        "tabla": "reg_temp_nevera",
+        "columnas": ["fecha", "temp_8am", "temp_4pm", "realizo"],
+    },
+    "insumos": {
+        "tabla": "reg_insumos",
+        "columnas": ["fecha_compra", "producto", "marca", "cantidad",
+                     "referencia", "registro_invima",
+                     "condicion_almacenamiento", "fecha_vencimiento"],
+    },
+    "esterilizacion": {
+        "tabla": "reg_esterilizacion",
+        "columnas": ["fecha", "operador", "tipo_empaque", "tipo_material",
+                     "tiempo", "temperatura", "cinta_indicadora",
+                     "control_quimico", "cinta_resultado",
+                     "control_resultado", "verificacion"],
+    },
+    "glutaraldehido": {
+        "tabla": "reg_glutaraldehido",
+        "columnas": ["fecha_inicio", "fecha_cambio"],
+    },
+}
+
+
+def _crud_registro(nombre):
+    conf = REGISTROS[nombre]
+    tabla = conf["tabla"]
+    columnas = conf["columnas"]
+
+    def listar():
+        with get_conn() as conn:
+            return conn.execute(
+                f"SELECT * FROM {tabla} ORDER BY id DESC"
+            ).fetchall()
+
+    def get(rid):
+        with get_conn() as conn:
+            cur = conn.execute(f"SELECT * FROM {tabla} WHERE id=?", (rid,))
+            fila = cur.fetchone()
+            return dict(fila) if fila else None
+
+    def guardar(datos):
+        with get_conn() as conn:
+            cur = conn.execute(
+                f"INSERT INTO {tabla} ({', '.join(columnas)})"
+                f" VALUES ({', '.join('?' * len(columnas))})",
+                [datos.get(c, "") for c in columnas],
+            )
+            return cur.lastrowid
+
+    def actualizar(rid, datos):
+        asignacion = ", ".join(f"{c}=?" for c in columnas)
+        with get_conn() as conn:
+            conn.execute(
+                f"UPDATE {tabla} SET {asignacion} WHERE id=?",
+                [datos.get(c, "") for c in columnas] + [rid],
+            )
+
+    def borrar(rid):
+        with get_conn() as conn:
+            conn.execute(f"DELETE FROM {tabla} WHERE id=?", (rid,))
+
+    return {"listar": listar, "get": get, "guardar": guardar,
+            "actualizar": actualizar, "borrar": borrar}
+
+
+REGISTROS_CRUD = {nombre: _crud_registro(nombre) for nombre in REGISTROS}

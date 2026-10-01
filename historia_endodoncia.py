@@ -1,6 +1,7 @@
 import datetime as dt
 import math
 import tkinter as tk
+import tkinter.font as tkfont
 from tkinter import ttk
 
 from campo_fecha import CampoFecha
@@ -64,7 +65,7 @@ CONDUCTO_FILAS = 4
 class CanvasChecks(ttk.Frame):
     """Lista de casillas dibujadas en canvas (rapido, sin widgets por item)."""
 
-    def __init__(self, master, etiquetas, columnas=3, alto_item=26):
+    def __init__(self, master, etiquetas, columnas=3, alto_item=34):
         super().__init__(master)
         self._etiquetas = etiquetas
         self._columnas = columnas
@@ -72,7 +73,7 @@ class CanvasChecks(ttk.Frame):
         self._estados = {clave: False for clave, _ in etiquetas}
         self.canvas = tk.Canvas(self, height=40, highlightthickness=0,
                                 cursor="hand2")
-        self.canvas.pack(fill="x")
+        self.canvas.pack(fill="x", padx=10, pady=5)  # Margen externo del canvas
         self.canvas.bind("<Configure>", self._dibujar)
 
     def _dibujar(self, event=None):
@@ -82,16 +83,32 @@ class CanvasChecks(ttk.Frame):
         c = self.canvas
         c.delete("all")
         filas = math.ceil(len(self._etiquetas) / self._columnas)
-        c.config(height=filas * self._alto_item + 6)
+        
+        # Margen interno superior e inferior dentro del Canvas
+        padding_v = 10  
+        c.config(height=filas * self._alto_item + (padding_v * 2))
+        
+        fuente = tkfont.Font(family="DejaVu Sans", size=11)
+        margen_x = 10
+        
         for i, (clave, etiqueta) in enumerate(self._etiquetas):
             fila, col = divmod(i, self._columnas)
-            x = 6 + col * (ancho / self._columnas)
-            y = 4 + fila * self._alto_item
+            col_w = ancho / self._columnas
+            x = margen_x + col * col_w
+            
+            # Ubica el centro vertical del texto dentro de su fila con el padding superior
+            y = padding_v + (self._alto_item / 2) + (fila * self._alto_item)
+            
             marca = "☑" if self._estados[clave] else "☐"
+            texto = f"{marca} {etiqueta}"
+            disp = col_w - margen_x - 12
+            if fuente.measure(texto) > disp:
+                while len(texto) > 2 and fuente.measure(texto + "…") > disp:
+                    texto = texto[:-1]
+                texto += "…"
             tag = f"chk_{clave}"
-            c.create_text(x, y, text=f"{marca} {etiqueta}",
-                          font=("DejaVu Sans", 11), fill="#222222",
-                          anchor="w", tags=(tag,))
+            c.create_text(x, y, text=texto, font=("DejaVu Sans", 11),
+                          fill="#222222", anchor="w", tags=(tag,))
             c.tag_bind(tag, "<Button-1>",
                        lambda e, k=clave: self._toggle(k))
 
@@ -158,7 +175,7 @@ class HistoriaEndodonciaForm(ttk.Frame):
         self.motivo = tk.Text(cuadro2, width=60, height=3)
         self.motivo.pack(fill="x")
 
-        cuadro3 = ttk.LabelFrame(self, text="Antecedentes", padding=10)
+        cuadro3 = ttk.LabelFrame(self, text="Antecedentes", padding=20)
         cuadro3.pack(fill="x", pady=(8, 0))
         self.antecedentes = CanvasChecks(cuadro3, ANTECEDENTES, columnas=3)
         self.antecedentes.pack(fill="x")
@@ -192,17 +209,17 @@ class HistoriaEndodonciaForm(ttk.Frame):
         self.diente_var = tk.StringVar()
         ttk.Entry(cuadro7, textvariable=self.diente_var).pack(fill="x")
 
-        cuadro8 = ttk.LabelFrame(self, text="Examen clinico", padding=10)
+        cuadro8 = ttk.LabelFrame(self, text="Examen clinico", padding=16)
         cuadro8.pack(fill="x", pady=(8, 0))
         self.examen_clinico = CanvasChecks(cuadro8, EXAMEN_CLINICO, columnas=3)
         self.examen_clinico.pack(fill="x")
 
-        cuadro9 = ttk.LabelFrame(self, text="Examen radiografico", padding=10)
+        cuadro9 = ttk.LabelFrame(self, text="Examen radiografico", padding=16)
         cuadro9.pack(fill="x", pady=(8, 0))
         self.examen_radio = CanvasChecks(cuadro9, EXAMEN_RADIOGRAFICO, columnas=3)
         self.examen_radio.pack(fill="x")
 
-        cuadro10 = ttk.LabelFrame(self, text="Dolor", padding=10)
+        cuadro10 = ttk.LabelFrame(self, text="Dolor", padding=16)
         cuadro10.pack(fill="x", pady=(8, 0))
         self.dolor = CanvasChecks(cuadro10, DOLOR, columnas=3)
         self.dolor.pack(fill="x")

@@ -96,20 +96,32 @@ class ScrollableFrame(ttk.Frame):
         self.canvas.bind("<Configure>", self._ajustar_ancho)
         self.canvas.configure(yscrollcommand=self.scroll.set)
 
-        self.canvas.bind_all("<MouseWheel>", self._rueda)
-        self.canvas.bind_all("<Button-4>", self._rueda_linux)
-        self.canvas.bind_all("<Button-5>", self._rueda_linux)
+        self.canvas.bind_all("<MouseWheel>", self._rueda, add="+")
+        self.canvas.bind_all("<Button-4>", self._rueda_linux, add="+")
+        self.canvas.bind_all("<Button-5>", self._rueda_linux, add="+")
 
     def _ajustar_ancho(self, event):
         self.canvas.itemconfigure(self._ventana, width=event.width)
 
+    @staticmethod
+    def _scroll_de(w):
+        while w is not None:
+            if isinstance(w, ScrollableFrame):
+                return w
+            w = w.master
+        return None
+
     def _rueda(self, event):
         if isinstance(event.widget, (tk.Text, tk.Listbox)):
+            return
+        if self._scroll_de(event.widget) is not self:
             return
         self.canvas.yview_scroll(int(-event.delta / 120), "units")
 
     def _rueda_linux(self, event):
         if isinstance(event.widget, (tk.Text, tk.Listbox)):
+            return
+        if self._scroll_de(event.widget) is not self:
             return
         if event.num == 4:
             self.canvas.yview_scroll(-1, "units")
