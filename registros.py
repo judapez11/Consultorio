@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 from campo_fecha import CampoFecha
+from exportar_pdf import PDF_DIR, exportar_registro
 
 COLUMNAS_REGISTROS = {
     "temp_ambiente": [
@@ -67,8 +68,29 @@ class RegistroTab(ttk.Frame):
         ttk.Button(botones, text="+ Agregar", command=self._agregar).pack(side="left")
         ttk.Button(botones, text="Editar", command=self._editar).pack(side="left", padx=8)
         ttk.Button(botones, text="Eliminar", command=self._eliminar).pack(side="left")
+        ttk.Button(botones, text="Exportar PDF", command=self._exportar).pack(
+            side="left", padx=8)
 
         self._refrescar()
+
+    def _exportar(self):
+        columnas = [c[0] for c in self._columnas]
+        titulos = [c[1] for c in self._columnas]
+        filas = self._crud["listar"]()
+        if not filas:
+            messagebox.showinfo("Aviso", "No hay registros para exportar.")
+            return
+        PDF_DIR.mkdir(exist_ok=True)
+        import re
+        limpio = re.sub(r"[^A-Za-z0-9_.-]+", "_", self._nombre).strip("_")
+        ruta = PDF_DIR / f"registro_{limpio}.pdf"
+        try:
+            exportar_registro(f"REGISTRO: {self._nombre}", titulos,
+                              [dict(f) for f in filas], ruta)
+        except Exception as exc:
+            messagebox.showerror("Error al exportar", str(exc))
+            return
+        messagebox.showinfo("PDF exportado", f"Guardado en:\n{ruta}")
 
     def _importar_crud(self):
         from db import REGISTROS_CRUD
