@@ -23,11 +23,17 @@ from db import (
     guardar_carta,
     actualizar_carta,
     borrar_carta,
+    listar_historias_endodoncia,
+    get_historia_endodoncia,
+    guardar_historia_endodoncia,
+    actualizar_historia_endodoncia,
+    borrar_historia_endodoncia,
 )
 from historia_odontologica import HistoriaOdontologicaForm
 from historia_urgencia import HistoriaUrgenciaForm
 from historia_evolucion import HistoriaEvolucionForm
 from historia_carta import HistoriaCartaForm
+from historia_endodoncia import HistoriaEndodonciaForm
 
 DOCUMENTOS = {
     "Historia Odontologica": {"form": HistoriaOdontologicaForm,
@@ -58,6 +64,13 @@ DOCUMENTOS = {
                                    "actualizar": actualizar_carta,
                                    "borrar": borrar_carta,
                                    "columna": "Motivo de consulta"},
+    "Historia de Endodoncia": {"form": HistoriaEndodonciaForm,
+                               "listar": listar_historias_endodoncia,
+                               "get": get_historia_endodoncia,
+                               "guardar": guardar_historia_endodoncia,
+                               "actualizar": actualizar_historia_endodoncia,
+                               "borrar": borrar_historia_endodoncia,
+                               "columna": "Motivo de consulta"},
 }
 
 
@@ -83,20 +96,32 @@ class ScrollableFrame(ttk.Frame):
         self.canvas.bind("<Configure>", self._ajustar_ancho)
         self.canvas.configure(yscrollcommand=self.scroll.set)
 
-        self.canvas.bind_all("<MouseWheel>", self._rueda)
-        self.canvas.bind_all("<Button-4>", self._rueda_linux)
-        self.canvas.bind_all("<Button-5>", self._rueda_linux)
+        self.canvas.bind_all("<MouseWheel>", self._rueda, add="+")
+        self.canvas.bind_all("<Button-4>", self._rueda_linux, add="+")
+        self.canvas.bind_all("<Button-5>", self._rueda_linux, add="+")
 
     def _ajustar_ancho(self, event):
         self.canvas.itemconfigure(self._ventana, width=event.width)
 
+    @staticmethod
+    def _scroll_de(w):
+        while w is not None:
+            if isinstance(w, ScrollableFrame):
+                return w
+            w = w.master
+        return None
+
     def _rueda(self, event):
         if isinstance(event.widget, (tk.Text, tk.Listbox)):
+            return
+        if self._scroll_de(event.widget) is not self:
             return
         self.canvas.yview_scroll(int(-event.delta / 120), "units")
 
     def _rueda_linux(self, event):
         if isinstance(event.widget, (tk.Text, tk.Listbox)):
+            return
+        if self._scroll_de(event.widget) is not self:
             return
         if event.num == 4:
             self.canvas.yview_scroll(-1, "units")

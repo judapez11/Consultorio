@@ -33,6 +33,8 @@ cd ~/Documentos/Consultorio && ./run.sh
 | `historia_urgencia.py` | Formulario Historia de Urgencia (Fase 4B): datos paciente, motivo, antecedentes (checkbuttons), exámenes, impresión, plan, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` + `prefill_nombre()` |
 | `historia_evolucion.py` | Formulario Hoja de Evolución (Fase 4C): fecha, detalle, firmas. `cargar()`/`datos()`/`limpiar()`/`validar()` |
 | `historia_carta.py` | Formulario Certificación Carta Dental (Fase 4D): datos + tipo doc (radios CC/TI/RC) + motivo + **odontograma reutilizado** + resumen SI/NO + examen 8 ítems en canvas + plan + firma. `cargar()`/`datos()`/`limpiar()`/`validar()`/`tiene_contenido()`/`prefill_nombre()` |
+| `historia_endodoncia.py` | Formulario Historia de Endodoncia (Fase 4E): datos + motivo + **56 checkboxes en canvas** (`CanvasChecks`: 23 antecedentes + 11 clínico + 11 radiográfico + 11 dolor) + vitales + tabla de conductos (4 filas × 5 col) + diagnóstico/pronóstico/plan + firmas. `cargar()`/`datos()`/`limpiar()`/`validar()`/`tiene_contenido()`/`prefill_nombre()` |
+| `registros.py` | **`RegistroTab`** (Fase 4F): registros administrativos ledger (temp ambiente/nevera, insumos, esterilización, glutaraldehído). Tabla + dialogo Agregar/Editar/Eliminar. Fechas con `CampoFecha` → ISO. CRUD genérico en `db.py` (`REGISTROS`/`REGISTROS_CRUD`). No son de paciente |
 | `odontograma.py` | Canvas: grid 2×2 por cuadrante, cada cuadrante 4×2, 5 sectores/diente, paleta de estados, clic derecho = ausente. API `get_estados()`/`set_estados()` |
 | `campo_fecha.py` | Campo de fecha editable con máscara dd/mm/yyyy (sin calendario; evita el bug de bloqueo del combo). `get_date()`/`set_date()`/`limpiar()` |
 | `mi_calendario.py` | Calendario propio en canvas (rápido). Actualmente sin uso directo (agenda usa tkcalendar; fechas usan campo_fecha) |
@@ -49,7 +51,8 @@ cd ~/Documentos/Consultorio && ./run.sh
 - ✅ Fase 4B: HISTORIA DE URGENCIA
 - ✅ Fase 4C: HOJA DE EVOLUCION
 - ✅ Fase 4D: CERTIFICACION CARTA DENTAL (reusa odontograma)
-- ⬜ 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
+- ✅ Fase 4E: HISTORIA DE ENDODONCIA (56 checkboxes en canvas, tabla de conductos)
+- ✅ Fase 4F: REGISTROS ADMINISTRATIVOS DRA. FAWIZA (5 ledgers: temp ambiente/nevera, insumos, esterilización, glutaraldehído)
 - ⬜ Fase 5: exportar PDF (solo cuando las 6 plantillas estén replicadas)
 - ⬜ Fase 6: pulido + estados de cita
 

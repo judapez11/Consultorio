@@ -4,6 +4,15 @@ from tkinter import ttk
 from pacientes import PacientesTab
 from agenda import AgendaTab
 from historia import DOCUMENTOS, DocumentoTab
+from registros import RegistroTab
+
+REGISTRO_TABS = [
+    ("Temp. Ambiente", "temp_ambiente"),
+    ("Temp. Nevera", "temp_nevera"),
+    ("Insumos", "insumos"),
+    ("Esterilizacion", "esterilizacion"),
+    ("Glutaraldehido", "glutaraldehido"),
+]
 
 
 class App(tk.Tk):
@@ -33,3 +42,13 @@ class App(tk.Tk):
             tab = DocumentoTab(self._tabs, nombre, conf)
             self.documento_tabs[nombre] = tab
             self._tabs.add(tab, text=nombre)
+
+        registros_tab = ttk.Frame(self._tabs)
+        self._tabs.add(registros_tab, text="Registros")
+        self.registro_tabs = {}
+        sub = ttk.Notebook(registros_tab)
+        sub.pack(fill="both", expand=True, padx=6, pady=6)
+        for titulo, nombre in REGISTRO_TABS:
+            tab = RegistroTab(sub, nombre)
+            self.registro_tabs[nombre] = tab
+            sub.add(tab, text=titulo)
