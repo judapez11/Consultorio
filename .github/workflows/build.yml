@@ -1,0 +1,27 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Instalar dependencias
+        run: pip install pyinstaller tkcalendar reportlab
+      - name: Verificar import
+        run: python -c "import main"
+      - name: Construir ejecutable
+        run: pyinstaller main.py --onefile --windowed --name ConsultorioDental --collect-all tkcalendar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ConsultorioDental-${{ matrix.os }}
+          path: dist/*
