@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from exportar_pdf import exportar_por_tipo
+
 from db import (
     listar_pacientes,
     listar_historias_od,
@@ -183,8 +185,9 @@ class DocumentoTab(ttk.Frame):
         botones.pack(fill="x", pady=(6, 0))
         ttk.Button(botones, text="Nueva", command=self._nueva).pack(side="left")
         ttk.Button(botones, text="Guardar", command=self._guardar).pack(side="left", padx=8)
-        ttk.Button(botones, text="Cancelar", command=self._cancelar).pack(side="left")
-        ttk.Button(botones, text="Borrar", command=self._borrar).pack(side="left", padx=8)
+        ttk.Button(botones, text="Exportar PDF", command=self._exportar).pack(side="left")
+        ttk.Button(botones, text="Cancelar", command=self._cancelar).pack(side="left", padx=8)
+        ttk.Button(botones, text="Borrar", command=self._borrar).pack(side="left")
 
         self.scroll = ScrollableFrame(self)
         self.scroll.pack(fill="both", expand=True, pady=(8, 0))
@@ -291,6 +294,18 @@ class DocumentoTab(ttk.Frame):
 
     def _cancelar(self):
         self._nueva()
+
+    def _exportar(self):
+        if not self._form:
+            return
+        datos = self._form.datos()
+        paciente = self._nombre_paciente() or "Paciente"
+        try:
+            ruta = exportar_por_tipo(self._nombre_doc, paciente, datos)
+        except Exception as exc:
+            messagebox.showerror("Error al exportar", str(exc))
+            return
+        messagebox.showinfo("PDF exportado", f"Guardado en:\n{ruta}")
 
     def _seleccionar_historia(self, event):
         sel = self.tree.selection()

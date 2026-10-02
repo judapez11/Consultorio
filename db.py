@@ -290,6 +290,11 @@ def borrar_cita(cid):
         conn.execute("DELETE FROM citas WHERE id=?", (cid,))
 
 
+def actualizar_estado_cita(cid, estado):
+    with get_conn() as conn:
+        conn.execute("UPDATE citas SET estado=? WHERE id=?", (estado, cid))
+
+
 def hora_ocupada(fecha, hora, excluir_id=None):
     with get_conn() as conn:
         if excluir_id:

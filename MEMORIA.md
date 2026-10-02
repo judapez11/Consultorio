@@ -12,9 +12,8 @@
 - ✅ Fase 4D: CERTIFICACION CARTA DENTAL (tabla carta_dental, reusa OdontogramaFrame; examen 8 ítems SI/NO en canvas; tipo doc = radios CC/TI/RC)
 - ✅ Fase 4E: HISTORIA DE ENDODONCIA (tabla historia_endodoncia; 56 checkboxes via `CanvasChecks` en canvas; signos vitales; tabla conductos 4×5 JSON; validar exige diente por tratar)
 - ✅ Fase 4F: REGISTROS ADMINISTRATIVOS (5 tablas `reg_*` sin paciente; `RegistroTab` ledger con dialogo; CRUD generico via `REGISTROS`/`REGISTROS_CRUD` en db.py; pestaña "Registros" con 5 sub-tabs)
-- ⬜ 4B: Historia Urgencia · 4C: Hoja Evolución · 4D: Certificación Carta Dental (reusa odontograma) · 4E: Endodoncia · 4F: Dra Fawiza (5 registros admin)
-- ⬜ Fase 5: exportar PDF (SOLO cuando las 6 plantillas estén replicadas)
-- ⬜ Fase 6: pulido + estados de cita
+- ✅ Fase 5: EXPORTAR PDF (`exportar_pdf.py`, reportlab; `exportar_por_tipo` por formulario; odontograma como tabla; botón en cada pestaña; salida `historias_pdf/`)
+- ✅ Fase 6: PULIDO — estados de cita (pendiente/realizada/cancelada; botones en agenda, columna estado, color en calendario: azul/verde/rojo)
 
 ## Decisiones tomadas
 - Offline, local, sin servidor, sin nube, sin seguridad/login, 1 usuario, sin updates.

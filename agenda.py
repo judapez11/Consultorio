@@ -8,6 +8,7 @@ from db import (
     listar_citas,
     guardar_cita,
     actualizar_cita,
+    actualizar_estado_cita,
     borrar_cita,
     hora_ocupada,
     listar_pacientes,
@@ -42,7 +43,9 @@ class AgendaTab(ttk.Frame):
             font=("Segoe UI", 13),
         )
         self.cal.pack()
-        self.cal.tag_config("cita", background="#cfe8ff")
+        self.cal.tag_config("cita_pendiente", background="#cfe8ff")
+        self.cal.tag_config("cita_realizada", background="#c6efce")
+        self.cal.tag_config("cita_cancelada", background="#f2c6c6")
         self.cal.bind("<<CalendarSelected>>", lambda e: self._mostrar_dia())
 
         derecha = ttk.Frame(contenedor)
@@ -52,17 +55,19 @@ class AgendaTab(ttk.Frame):
         self.dia_label.pack(anchor="w")
 
         self.tree = ttk.Treeview(
-            derecha, columns=("id", "hora", "paciente", "motivo"),
+            derecha, columns=("id", "hora", "paciente", "motivo", "estado"),
             show="headings", selectmode="browse",
         )
         self.tree.heading("id", text="ID")
         self.tree.heading("hora", text="Hora")
         self.tree.heading("paciente", text="Paciente")
         self.tree.heading("motivo", text="Motivo")
-        self.tree.column("id", width=70, stretch=False)
-        self.tree.column("hora", width=90, stretch=False)
-        self.tree.column("paciente", width=160)
-        self.tree.column("motivo", width=180)
+        self.tree.heading("estado", text="Estado")
+        self.tree.column("id", width=60, stretch=False)
+        self.tree.column("hora", width=80, stretch=False)
+        self.tree.column("paciente", width=150)
+        self.tree.column("motivo", width=170)
+        self.tree.column("estado", width=100, stretch=False)
         scroll = ttk.Scrollbar(derecha, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scroll.set)
         self.tree.pack(fill="both", expand=True, pady=6)
@@ -74,6 +79,12 @@ class AgendaTab(ttk.Frame):
         ttk.Button(botones, text="+ Agregar cita", command=self.agregar).pack(side="left")
         ttk.Button(botones, text="Editar", command=self.editar).pack(side="left", padx=8)
         ttk.Button(botones, text="Eliminar", command=self.eliminar).pack(side="left")
+        ttk.Button(botones, text="Marcar realizada",
+                   command=lambda: self._marcar_estado("realizada")).pack(side="left", padx=(16, 0))
+        ttk.Button(botones, text="Marcar cancelada",
+                   command=lambda: self._marcar_estado("cancelada")).pack(side="left", padx=4)
+        ttk.Button(botones, text="Pendiente",
+                   command=lambda: self._marcar_estado("pendiente")).pack(side="left", padx=4)
 
         self.refrescar_calendario()
         self.cal.selection_set(dt.date.today())
@@ -83,7 +94,9 @@ class AgendaTab(ttk.Frame):
         self.cal.calevent_remove("all")
         for c in listar_citas():
             fecha = dt.datetime.strptime(c["fecha"], "%Y-%m-%d").date()
-            self.cal.calevent_create(fecha, f"{c['hora']} - {c['paciente_nombre']}", "cita")
+            tag = f"cita_{c['estado']}" if c["estado"] in (
+                "pendiente", "realizada", "cancelada") else "cita_pendiente"
+            self.cal.calevent_create(fecha, f"{c['hora']} - {c['paciente_nombre']}", tag)
 
     def _mostrar_dia(self):
         fecha = self.cal.selection_get()
@@ -95,7 +108,16 @@ class AgendaTab(ttk.Frame):
             self.tree.delete(item)
         for c in listar_citas(self._fecha_actual):
             self.tree.insert("", "end", iid=str(c["id"]),
-                             values=(c["id"], c["hora"], c["paciente_nombre"], c["motivo"]))
+                             values=(c["id"], c["hora"], c["paciente_nombre"],
+                                     c["motivo"], c["estado"]))
+
+    def _marcar_estado(self, estado):
+        if self._selected_id is None:
+            messagebox.showinfo("Aviso", "Selecciona una cita de la lista.")
+            return
+        actualizar_estado_cita(self._selected_id, estado)
+        self.refrescar_calendario()
+        self._mostrar_dia()
 
     def _seleccionar(self, event):
         sel = self.tree.selection()
