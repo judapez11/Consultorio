@@ -1,16 +1,18 @@
 import tkinter as tk
 from tkinter import ttk
 
+from pacientes import PacientesTab
+from agenda import AgendaTab
+from historia import DOCUMENTOS, DocumentoTab
+from registros import RegistroTab
 
-def _placeholder(master, texto):
-    frame = ttk.Frame(master, padding=40)
-    ttk.Label(
-        frame,
-        text=texto,
-        font=("Segoe UI", 16),
-        anchor="center",
-    ).pack(expand=True, fill="both")
-    return frame
+REGISTRO_TABS = [
+    ("Temp. Ambiente", "temp_ambiente"),
+    ("Temp. Nevera", "temp_nevera"),
+    ("Insumos", "insumos"),
+    ("Esterilizacion", "esterilizacion"),
+    ("Glutaraldehido", "glutaraldehido"),
+]
 
 
 class App(tk.Tk):
@@ -19,14 +21,34 @@ class App(tk.Tk):
         self.title("Consultorio Dental")
         self.geometry("900x600")
         self.minsize(700, 450)
+        self._maximizar()
+
+    def _maximizar(self):
+        try:
+            self.attributes("-zoomed", True)
+        except tk.TclError:
+            pass
 
         self._tabs = ttk.Notebook(self)
         self._tabs.pack(fill="both", expand=True)
 
-        self.agenda_tab = _placeholder(self._tabs, "Agenda")
-        self.pacientes_tab = _placeholder(self._tabs, "Pacientes")
-        self.historia_tab = _placeholder(self._tabs, "Historia")
-
+        self.agenda_tab = AgendaTab(self._tabs)
+        self.pacientes_tab = PacientesTab(self._tabs)
         self._tabs.add(self.agenda_tab, text="Agenda")
         self._tabs.add(self.pacientes_tab, text="Pacientes")
-        self._tabs.add(self.historia_tab, text="Historia")
+
+        self.documento_tabs = {}
+        for nombre, conf in DOCUMENTOS.items():
+            tab = DocumentoTab(self._tabs, nombre, conf)
+            self.documento_tabs[nombre] = tab
+            self._tabs.add(tab, text=nombre)
+
+        registros_tab = ttk.Frame(self._tabs)
+        self._tabs.add(registros_tab, text="Registros")
+        self.registro_tabs = {}
+        sub = ttk.Notebook(registros_tab)
+        sub.pack(fill="both", expand=True, padx=6, pady=6)
+        for titulo, nombre in REGISTRO_TABS:
+            tab = RegistroTab(sub, nombre)
+            self.registro_tabs[nombre] = tab
+            sub.add(tab, text=titulo)
