@@ -66,5 +66,6 @@ cd ~/Documentos/Consultorio && ./run.sh
 - Nombres de funciones/archivos en español.
 - Tablas SQLite nuevas → registrar también en `init_db()`.
 - Ventana nueva dentro de la app: `Toplevel` + `grab_set()` + `transient()`.
+- **Empaquetado (PyInstaller):** `db.py` y `exportar_pdf.py` usan `sys.frozen` → `BASE_DIR = Path(sys.executable).parent` para que `datos.db`/`historias_pdf/` queden **junto al ejecutable** (en onefile `__file__` apunta a `_MEIPASS`, que se borra). Maximizar: `state("zoomed")` (Windows) con fallback `attributes("-zoomed", True)` (Linux). Tabs no scrollables (Pacientes/Agenda) deben caber en 900×600 (treeview con `height` fijo).
 - **Odontograma:** los rótulos de zonas comparten el tag del rectángulo (para clic); al repintar con `itemconfig`, cambiar `fill` SOLO a items de tipo `rectangle` (no a `text`).
 - **Canvas interactivo:** los textos sobre zonas clicables deben compartir tag y NO usar `state="disabled"` (deja el texto invisible).

@@ -1,6 +1,7 @@
 import html
 import os
 import re
+import sys
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -10,7 +11,10 @@ from reportlab.lib.units import mm
 from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer, Table,
                                 TableStyle)
 
-BASE_DIR = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent
 PDF_DIR = BASE_DIR / "historias_pdf"
 
 SECTORES = ["vestibular", "mesial", "oclusal", "distal", "lingual"]
