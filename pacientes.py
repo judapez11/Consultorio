@@ -34,7 +34,7 @@ class PacientesTab(ttk.Frame):
         medio.pack(fill="both", expand=True, pady=10)
 
         self.tree = ttk.Treeview(medio, columns=("id", "nombre", "telefono"),
-                                 show="headings", selectmode="browse")
+                                 show="headings", height=5, selectmode="browse")
         self.tree.heading("id", text="ID")
         self.tree.heading("nombre", text="Nombre")
         self.tree.heading("telefono", text="Teléfono")
